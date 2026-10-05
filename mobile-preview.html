@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>모바일 미리보기 — KEEPER LAB</title>
+<style>
+  body { margin: 0; background: #2a2a2a; color: #eee; font: 14px -apple-system, "Apple SD Gothic Neo", sans-serif; }
+  header { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 12px 16px; background: #111; position: sticky; top: 0; z-index: 2; }
+  header b { margin-right: 8px; }
+  button { font: inherit; padding: 6px 12px; border-radius: 999px; border: 1px solid #555; background: transparent; color: #eee; cursor: pointer; }
+  button.on { background: #fff; color: #111; border-color: #fff; }
+  .note { color: #999; font-size: 12px; margin-left: auto; }
+  main { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; padding: 24px; }
+  .phone { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .frame { border: 12px solid #000; border-radius: 44px; overflow: hidden; background: #000; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+  iframe { display: block; border: 0; }
+</style>
+</head>
+<body>
+<header>
+  <b>📱 모바일 미리보기</b>
+  <span>페이지:</span>
+  <button data-p="" class="on">메인</button><button data-p="about">소개</button><button data-p="shop">샵</button>
+  <button data-p="training">트레이닝</button><button data-p="archive">아카이브</button><button data-p="tactics">택티컬</button>
+  <span class="note">사이트를 고친 뒤에는 이 페이지를 새로고침(⌘R) 하세요</span>
+</header>
+<main id="phones"></main>
+<script>
+  // 많이 쓰는 휴대폰 화면 크기
+  const PHONES = [["iPhone SE", 375, 667], ["iPhone 15", 393, 852], ["Galaxy S24", 360, 780]];
+  const main = document.getElementById("phones");
+  main.innerHTML = PHONES.map(([n, w, h]) => `<div class="phone"><div class="frame"><iframe src="index.html" width="${w}" height="${h}" title="${n}"></iframe></div><span>${n} · ${w}×${h}</span></div>`).join("");
+  document.querySelector("header").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-p]"); if (!b) return;
+    document.querySelectorAll("[data-p]").forEach((x) => x.classList.toggle("on", x === b));
+    main.querySelectorAll("iframe").forEach((f) => { f.src = "index.html#/" + b.dataset.p; });
+  });
+</script>
+</body>
+</html>
