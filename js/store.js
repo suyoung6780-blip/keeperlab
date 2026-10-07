@@ -25,7 +25,16 @@
       if (saved) {
         // 새로 추가된 기본 예시는 기존 목록 앞에 붙여줌
         const missing = seed.filter((x) => !saved.some((y) => y.id === x.id));
-        if (missing.length) { const merged = [...missing, ...saved]; write(key, merged); return merged; }
+        // 기본 예시 내용이 바뀌었으면 최신 내용으로 갱신 (좋아요 수는 유지)
+        let changed = false;
+        const fresh = saved.map((y) => {
+          const x = seed.find((s) => s.id === y.id);
+          if (!x) return y;
+          const next = { ...x, likes: y.likes ?? x.likes };
+          if (JSON.stringify(next) !== JSON.stringify(y)) changed = true;
+          return next;
+        });
+        if (missing.length || changed) { const merged = [...missing, ...fresh]; write(key, merged); return merged; }
         return saved;
       }
       write(key, seed);

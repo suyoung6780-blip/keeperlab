@@ -218,19 +218,18 @@
             <span class="shop-tag">${p.tag}</span>
             <h3>${p.name}</h3>
             <p class="shop-opts">${p.options.map((o) => o.name).join(" · ")}</p>
-            <p class="shop-price">${won(minPrice(p))}${same ? "" : " ~"}</p>
+            <p class="shop-price">${SHOP_OPEN ? won(minPrice(p)) + (same ? "" : " ~") : `<span class="soon-badge">출시 예정</span>`}</p>
           </div>
         </a>`;
     }).join("");
   }
 
-  // 결제 준비가 끝나면 true로 바꾸면 상품 목록·상세가 다시 열려요
+  // false: 상품 소개만 (가격·주문 없이 '출시 예정') · 결제 준비가 끝나면 true로 바꾸면 주문까지 열려요
   const SHOP_OPEN = false;
   // #/shop → 목록, #/shop/상품id → 상세
   function showShop(productId) {
-    $("#shopSoon").hidden = SHOP_OPEN;
+    $("#shopSoon").hidden = true;
     $("#shopSteps").hidden = !SHOP_OPEN;
-    if (!SHOP_OPEN) { $("#shopList").hidden = true; $("#shopDetail").hidden = true; return; }
     const p = PRODUCTS.find((x) => x.id === productId);
     $("#shopList").hidden = !!p;
     $("#shopDetail").hidden = !p;
@@ -238,7 +237,7 @@
     if (cur !== p) { cur = p; cartQty = Object.fromEntries(p.options.map((o, i) => [o.id, i === 0 ? 1 : 0])); }
     document.title = `${p.name} — KEEPER LAB`;
     $("#crumbName").textContent = p.name;
-    renderProduct();
+    if (SHOP_OPEN) renderProduct(); else renderPreview();
     $("#productDetail").innerHTML = p.detail || "";
   }
 
@@ -272,6 +271,32 @@
         <button class="btn btn-solid btn-block" id="orderBtn">주문하기</button>
       </div>`;
     syncTotals();
+    loadPhotos();
+  }
+
+  // 출시 전: 가격·수량·주문 대신 출시 예정 안내
+  function renderPreview() {
+    $("#product").innerHTML = `
+      <div class="pd-gallery">
+        <div class="pd-main" id="pdMain"></div>
+        <div class="pd-thumbs" id="pdThumbs"></div>
+      </div>
+      <div class="pd-info">
+        <span class="pd-tag">${cur.tag} · ${cur.en}</span>
+        <h3 class="pd-name">${cur.name}</h3>
+        <p class="pd-price"><span class="soon-badge">출시 예정</span></p>
+        <p class="pd-summary">${cur.summary}</p>
+        <div class="pd-options">
+          ${cur.options.map((o) => `<div class="pd-opt pd-opt-soon"><div><b>${o.name}</b><span>${o.en || ""}</span></div></div>`).join("")}
+        </div>
+        <div class="pd-soon-box">
+          <p>곧 판매를 시작해요. 출시 소식은 인스타그램과 카카오톡 채널에서 가장 먼저 알려드릴게요.</p>
+          <div class="soon-cta">
+            <a class="btn btn-solid btn-sm" href="https://www.instagram.com/keeper1ab/" target="_blank" rel="noopener noreferrer">인스타그램 팔로우</a>
+            <a class="btn btn-ghost btn-sm" href="https://pf.kakao.com/_yPxaxiX/chat" target="_blank" rel="noopener noreferrer">카카오톡으로 문의</a>
+          </div>
+        </div>
+      </div>`;
     loadPhotos();
   }
 
@@ -572,62 +597,68 @@
      04 ARCHIVE
      ========================================================= */
   const RES_SEED = [
+    // 영상 — 골키퍼 빌드업
     {
-      id: "r1", type: "article", title: "다이빙의 시작은 발이다: 파워 스텝", author: "KEEPER LAB", createdAt: Date.parse("2026-09-12"),
+      id: "v1", type: "video", title: "[골키퍼 빌드업] 데제르비의 골키퍼 빌드업 디테일", author: "피비에셀 Football Analysis", org: "YouTube",
+      url: "https://youtu.be/rhU2dRrrs0Q", createdAt: Date.parse("2026-10-08T12:00:02"),
+      desc: "골키퍼 빌드업 — 데제르비 팀에서 골키퍼가 빌드업에 참여하는 방식과 디테일.",
+    },
+    {
+      id: "v2", type: "video", title: "[골키퍼 빌드업] 골키퍼 빌드업은 이것만 알아도 99% 해결됩니다", author: "축구일타_Football IQLab", org: "YouTube",
+      url: "https://youtu.be/jO4kgzIIF1I", createdAt: Date.parse("2026-10-08T12:00:01"),
+      desc: "골키퍼 빌드업 — GK 후방 빌드업 꿀팁.",
+    },
+    {
+      id: "v3", type: "video", title: "[골키퍼 빌드업] Build up direction", author: "GEDFOOTBALL", org: "YouTube",
+      url: "https://youtu.be/ALNOFgS3Yis", createdAt: Date.parse("2026-10-08T12:00:00"),
+      desc: "골키퍼 빌드업 — 빌드업 방향 설정.",
+    },
+    {
+      id: "r1", type: "analysis", title: "다이빙의 시작은 발이다: 파워 스텝", author: "KEEPER LAB", createdAt: Date.parse("2026-09-12"),
       desc: "멀리 뜨는 다이빙은 팔이 아니라 첫 스텝에서 결정됩니다. 공 방향 발로 딛는 파워 스텝의 원리.",
       body: `<h4>왜 스텝인가</h4><p>다이빙 거리의 대부분은 지면 반발력에서 나옵니다. 세트 포지션에서 공 방향 발을 짧고 강하게 사선 앞으로 딛는 것이 '파워 스텝'입니다.</p>
         <h4>체크포인트</h4><ol><li>세트 시 체중은 발 앞꿈치, 무릎은 살짝 굽힘</li><li>공 방향 발을 사선 앞으로 — 옆이 아니라 앞으로 딛어야 각도를 줄입니다</li><li>딛는 발과 같은 쪽 팔이 먼저 공 라인으로</li><li>반대쪽 무릎을 끌어올려 몸을 '띄운다'</li></ol>
         <h4>흔한 실수</h4><p>뒤로 빠지는 스텝(드롭 스텝)은 골대와의 거리를 줄여 각도를 넓혀줍니다. 영상으로 자신의 첫 스텝 방향을 꼭 확인하세요.</p>`,
     },
     {
-      id: "r2", type: "article", title: "1:1 상황, 언제 서고 언제 덮칠까", author: "KEEPER LAB", createdAt: Date.parse("2026-09-03"),
+      id: "r2", type: "analysis", title: "1:1 상황, 언제 서고 언제 덮칠까", author: "KEEPER LAB", createdAt: Date.parse("2026-09-03"),
       desc: "공격수의 터치 거리로 판단하는 1:1 대응. 블록 자세(K-블록, 스프레드)의 선택 기준.",
       body: `<h4>판단 기준: 공과 발 사이의 거리</h4><p>공격수의 터치가 길어질 때가 전진의 신호입니다. 공이 발에 붙어 있으면 거리를 좁히며 세트하고, 터치가 길면 공을 향해 과감하게 덮칩니다.</p>
         <h4>블록의 종류</h4><ul><li><b>K-블록</b> — 근거리, 낮은 슈팅. 한쪽 무릎을 꿇고 다른 다리로 각을 막음</li><li><b>스프레드</b> — 초근거리. 몸 전체를 펼쳐 면적을 최대화</li><li><b>스탠딩</b> — 거리가 남아 있고 칩슛 위험이 있을 때</li></ul>
         <h4>원칙</h4><p>먼저 넘어지지 않는다. 공격수가 결정하게 만들고, 그 순간에 반응합니다.</p>`,
     },
     {
-      id: "r3", type: "article", title: "크로스 처리: 나갈까, 남을까", author: "Coach J.", createdAt: Date.parse("2026-08-21"),
+      id: "r3", type: "analysis", title: "크로스 처리: 나갈까, 남을까", author: "KEEPER LAB", createdAt: Date.parse("2026-08-21"),
       desc: "크로스 상황에서 골키퍼가 내려야 하는 세 가지 판단 — 궤적, 트래픽, 콜.",
       body: `<h4>1. 시작 위치</h4><p>크로스 쪽 포스트에서 1~2m 앞, 골대 중앙 쪽으로 열린 자세. 몸을 공과 박스 안쪽 모두 볼 수 있게 엽니다.</p>
         <h4>2. 궤적 읽기</h4><p>공이 떠나는 순간 높이·속도·회전을 읽고 결정합니다. 망설임이 가장 큰 실점 원인입니다.</p>
         <h4>3. 콜</h4><p>"키퍼!" 또는 "어웨이!" — 결정했다면 크고 빠르게. 수비수가 다음 행동을 할 수 있게 하는 것이 목소리의 역할입니다.</p>`,
     },
-    {
-      id: "r4", type: "drill", title: "리액션 월 15분 루틴", author: "KEEPER LAB", createdAt: Date.parse("2026-08-10"),
-      desc: "벽과 리플렉스 볼만 있으면 되는 개인 반응 훈련. 3세트 × 4종목.",
-      body: `<h4>준비물</h4><p>벽, 리플렉스 볼 또는 테니스공, 콘 2개</p>
-        <h4>루틴 (각 45초 / 휴식 15초 × 3세트)</h4><ol><li>벽 2m 앞 양손 캐치 — 세트 자세 유지</li><li>한 손 던지고 반대 손 캐치 — 손-눈 협응</li><li>리플렉스 볼 바운드 캐치 — 낮은 자세</li><li>콘 사이 사이드 스텝 후 캐치 — 스텝과 손 동기화</li></ol>
-        <h4>코칭 포인트</h4><p>속도보다 '세트 자세로 돌아오는 것'을 우선하세요. 매 캐치 후 무게중심을 앞꿈치로.</p>`,
-    },
-    {
-      id: "r5", type: "drill", title: "빌드업 패스 3-게이트 드릴", author: "Coach J.", createdAt: Date.parse("2026-07-28"),
-      desc: "백패스 첫 터치부터 전환 패스까지. 콘 게이트 3개로 만드는 발 기술 훈련.",
-      body: `<h4>세팅</h4><p>골대 앞 10m에 코치, 좌·우·중앙 20m 지점에 콘 게이트(폭 2m) 3개.</p>
-        <h4>진행</h4><ol><li>코치의 백패스를 오픈 바디로 첫 터치</li><li>코치가 외치는 게이트로 2터치 이내 패스</li><li>성공 10회 후 약발로 반복</li></ol>
-        <h4>발전</h4><p>압박 역할 선수를 추가해 첫 터치 방향을 압박 반대쪽으로 가져가도록 합니다.</p>`,
-    },
   ];
-  const resStore = Store.collection("kl_resources_v1", RES_SEED);
-  const TYPE_NAME = { video: "영상", article: "아티클", drill: "훈련 드릴" };
+  const resStore = Store.collection("kl_resources_v2", RES_SEED);
+  // 영상(유튜브 바로 재생) · 논문 · 분석
+  const TYPE_NAME = { video: "영상", paper: "논문", analysis: "분석", article: "분석" };
+  const typeOf = (r) => (r.type === "article" ? "analysis" : r.type);
+  // 작성자 표시: 이름 (소속)
+  const byline = (o) => (o.org ? `${o.author} (${o.org})` : o.author || "");
   const ytId = (url = "") => (url.match(/(?:youtu\.be\/|[?&]v=|embed\/|shorts\/|live\/)([\w-]{11})/) || [])[1];
   let resFilter = "all";
 
   async function renderResources() {
-    const items = (await resStore.list()).filter((r) => resFilter === "all" || r.type === resFilter);
+    const items = (await resStore.list()).filter((r) => TYPE_NAME[r.type] && (resFilter === "all" || typeOf(r) === resFilter));
     $("#resGrid").innerHTML = items.length ? items.map((r) => {
       const yt = ytId(r.url);
       const thumb = yt ? `style="background-image:url('https://i.ytimg.com/vi/${yt}/hqdefault.jpg')"` : "";
-      const glyph = { video: "PLAY", article: "READ", drill: "DRILL" }[r.type];
+      const glyph = { video: "PLAY", paper: "PAPER", analysis: "ANALYSIS" }[typeOf(r)];
       return `<button class="res-card" data-res="${r.id}">
         <div class="res-thumb" ${thumb}>${yt ? "" : `<span class="res-glyph">${glyph}</span>`}${r.type === "video" ? `<span class="res-play"></span>` : ""}</div>
         <div class="res-body">
-          <div class="res-meta"><span class="type">${TYPE_NAME[r.type]}</span><span>${esc(r.author)}</span><span>${fmtDate(r.createdAt)}</span></div>
+          <div class="res-meta"><span class="type">${TYPE_NAME[r.type]}</span><span>${esc(byline(r))}</span><span>${fmtDate(r.createdAt)}</span></div>
           <h3 class="res-title">${esc(r.title)}</h3>
           <p class="res-desc">${esc(r.desc)}</p>
         </div>
       </button>`;
-    }).join("") : `<div class="empty">${resFilter === "video" ? "아직 공유된 영상이 없어요. 첫 영상을 공유해보세요!" : "자료가 없어요."}</div>`;
+    }).join("") : `<div class="empty">${{ video: "아직 올라온 영상이 없어요.", paper: "아직 올라온 논문이 없어요.", analysis: "아직 올라온 분석 자료가 없어요." }[resFilter] || "자료가 없어요."}</div>`;
   }
 
   $("#resFilters").addEventListener("click", (e) => {
@@ -643,9 +674,9 @@
       ? `<div class="video-wrap"><iframe src="https://www.youtube-nocookie.com/embed/${yt}?autoplay=1" title="${esc(r.title)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`
       : "";
     const body = r.body || (r.desc ? `<p style="white-space:pre-wrap">${esc(r.desc)}</p>` : "");
-    const link = r.url && !yt ? `<p><a class="btn btn-ghost btn-sm" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">원본 링크 열기 ↗</a></p>` : "";
+    const link = r.url && !yt ? `<p><a class="btn btn-ghost btn-sm" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${typeOf(r) === "paper" ? "논문 원문 보기 ↗" : "원본 링크 열기 ↗"}</a></p>` : "";
     const del = r.mine ? `<div class="form-actions"><button class="btn btn-ghost btn-sm" data-del-res="${r.id}">삭제</button></div>` : "";
-    openModal(`${media}<h3>${esc(r.title)}</h3><div class="meta">${TYPE_NAME[r.type]} · ${esc(r.author)} · ${fmtDate(r.createdAt)}</div><div class="article">${body}</div>${link}${del}`, { wide: !!yt });
+    openModal(`${media}<h3>${esc(r.title)}</h3><div class="meta">${TYPE_NAME[r.type]} · ${esc(byline(r))} · ${fmtDate(r.createdAt)}</div><div class="article">${body}</div>${link}${del}`, { wide: !!yt });
   });
 
   $("#modalBody").addEventListener("click", async (e) => {
@@ -655,14 +686,15 @@
 
   $("#resShareBtn").addEventListener("click", () => {
     const body = openModal(`
-      <h3>자료 공유하기</h3><div class="meta">영상 · 아티클 · 훈련 드릴</div>
+      <h3>자료 공유하기</h3><div class="meta">영상 · 논문 · 분석</div>
       <form class="form" id="resForm">
+        <label>종류<select name="type"><option value="video">영상 (유튜브)</option><option value="paper">논문</option><option value="analysis">분석</option></select></label>
         <div class="form-row">
-          <label>종류<select name="type"><option value="video">영상</option><option value="article">아티클</option><option value="drill">훈련 드릴</option></select></label>
-          <label>작성자<input name="author" required maxlength="30" value="${esc(localStorage.getItem("kl_name") || "")}" placeholder="이름 또는 닉네임" /></label>
+          <label>작성자 이름<input name="author" required maxlength="20" value="${esc(localStorage.getItem("kl_name") || "")}" placeholder="예) 유수영" /></label>
+          <label>소속<input name="org" maxlength="30" value="${esc(localStorage.getItem("kl_org") || "")}" placeholder="예) KEEPER LAB" /></label>
         </div>
         <label>제목<input name="title" required maxlength="80" placeholder="예) 하이볼 캐칭 포인트 정리" /></label>
-        <label>링크 (유튜브 링크는 바로 재생돼요)<input name="url" type="url" placeholder="https://youtu.be/..." /></label>
+        <label>링크 (유튜브는 바로 재생 · 논문은 PDF나 원문 주소)<input name="url" type="url" placeholder="https://youtu.be/..." /></label>
         <label>설명 / 내용<textarea name="desc" maxlength="3000" placeholder="어떤 자료인지, 핵심 포인트를 적어주세요"></textarea></label>
         <div class="form-actions"><button type="button" class="btn btn-ghost btn-sm" data-close>취소</button><button class="btn btn-solid btn-sm">공유하기</button></div>
       </form>`);
@@ -670,8 +702,8 @@
       e.preventDefault();
       const f = Object.fromEntries(new FormData(e.target));
       if (f.type === "video" && !f.url) return toast("영상은 링크가 필요해요");
-      try { localStorage.setItem("kl_name", f.author); } catch {}
-      await resStore.add({ type: f.type, title: f.title.trim(), author: f.author.trim(), url: f.url.trim(), desc: f.desc.trim() });
+      try { localStorage.setItem("kl_name", f.author.trim()); localStorage.setItem("kl_org", f.org.trim()); } catch {}
+      await resStore.add({ type: f.type, title: f.title.trim(), author: f.author.trim(), org: f.org.trim(), url: f.url.trim(), desc: f.desc.trim() });
       closeModal();
       resFilter = "all"; setChips($("#resFilters"), $("#resFilters .chip"));
       renderResources();
@@ -784,7 +816,7 @@
         lines: [{ type: "run", pts: [[0, 0.8], [0.9, 3.8]] }, { type: "pass", pts: [[2.7, 12.6], [-3.6, 0]] }, { type: "pass", pts: [[2.7, 12.6], [3.6, 0]] }, { type: "run", pts: [[7.5, 17.5], [4.5, 14.6]] }] },
     },
     {
-      id: "s3", title: "측면 크로스 — 시작 위치와 공격 지점", author: "Coach J.", category: "크로스", likes: 17, createdAt: Date.parse("2026-09-14"),
+      id: "s3", title: "측면 크로스 — 시작 위치와 공격 지점", author: "KEEPER LAB", category: "크로스", likes: 17, createdAt: Date.parse("2026-09-14"),
       desc: "크로스 쪽 포스트 1~2m 앞에서 몸을 열고 시작. 궤적을 읽은 뒤 앞 포스트 공간으로 공격합니다.",
       state: { v: 2, range: "third", view: "behind", items: [
         P("opp", -27, 9, 1.68, "cross", "7"), BALL(-26.3, 9.4), P("own", -24.5, 11, -2.3, "jockey", "2"),
@@ -803,7 +835,7 @@
         lines: [{ type: "pass", pts: [[-0.1, 4.3], [-15.5, 8.8]] }, { type: "pass", pts: [[-16, 9], [-27.5, 25]] }, { type: "run", pts: [[-28, 26], [-28, 36]] }, { type: "run", pts: [[5, 10], [1.8, 5.6]] }] },
     },
     {
-      id: "s5", title: "리액션 다이빙 — 3콘 드릴", author: "Coach J.", category: "훈련 드릴", likes: 9, createdAt: Date.parse("2026-08-25"),
+      id: "s5", title: "리액션 다이빙 — 3콘 드릴", author: "KEEPER LAB", category: "훈련 드릴", likes: 9, createdAt: Date.parse("2026-08-25"),
       desc: "중앙 콘에서 세트 → 코치 신호에 좌/우 콘 터치 → 즉시 반대 포스트 쪽 슈팅 다이빙.",
       state: { v: 2, range: "goal", view: "tac", items: [
         CONE(-2.5, 2.2), CONE(0, 3.2), CONE(2.5, 2.2), P("gk", 1.6, 1.3, 0, "dive_mid", "GK"),
@@ -819,7 +851,7 @@
     enc: (obj) => btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(obj)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
     dec: (str) => JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(str.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0)))),
   };
-  const shareUrl = (b) => location.href.split("#")[0] + "#b=" + b64.enc({ t: b.title, a: b.author, c: b.category, d: b.desc, s: b.state });
+  const shareUrl = (b) => location.href.split("#")[0] + "#b=" + b64.enc({ t: b.title, a: b.author, o: b.org, c: b.category, d: b.desc, s: b.state });
 
   async function copy(text) {
     try { await navigator.clipboard.writeText(text); toast("링크를 복사했어요 — 다른 코치에게 보내보세요"); }
@@ -831,14 +863,14 @@
     const cat = $("#boardCat").value;
     const boards = (await boardStore.list()).filter((b) =>
       (cat === "all" || b.category === cat) &&
-      (!q || (b.title + " " + b.author).toLowerCase().includes(q)));
+      (!q || (b.title + " " + b.author + " " + (b.org || "")).toLowerCase().includes(q)));
     $("#boardGrid").innerHTML = boards.length ? boards.map((b) => `
       <button class="board-card" data-board="${b.id}">
         <img alt="" src="${boardImg(b.state, 560, 385)}" />
         <div class="bc-body">
           <span class="bc-cat">${esc(b.category)}</span>
           <h4 class="bc-title">${esc(b.title)}</h4>
-          <div class="bc-foot"><span>${esc(b.author)}</span><span>♥ ${b.likes || 0}</span></div>
+          <div class="bc-foot"><span>${esc(byline(b))}</span><span>♥ ${b.likes || 0}</span></div>
         </div>
       </button>`).join("") : `<div class="empty">조건에 맞는 보드가 없어요.</div>`;
   }
@@ -850,7 +882,7 @@
     const body = openModal(`
       <div class="board-view">
         <h3>${esc(b.title)}</h3>
-        <div class="meta">${esc(b.category)} · ${esc(b.author)}${b.createdAt ? " · " + fmtDate(b.createdAt) : ""}${shared ? " · 공유받은 보드" : ""}</div>
+        <div class="meta">${esc(b.category)} · ${esc(byline(b))}${b.createdAt ? " · " + fmtDate(b.createdAt) : ""}${shared ? " · 공유받은 보드" : ""}</div>
         <img alt="${esc(b.title)} 전술 보드" src="${boardImg(b.state, 1040, 715)}" />
         ${b.desc ? `<p class="desc">${esc(b.desc)}</p>` : ""}
         <div class="form-actions" style="justify-content:flex-start">
@@ -878,7 +910,7 @@
         e.target.closest("[data-act]").textContent = `${on ? "♥" : "♡"} ${b.likes}`;
         renderBoards();
       } else if (act === "keep") {
-        await boardStore.add({ title: b.title, author: b.author, category: b.category, desc: b.desc, state: b.state, likes: 0 });
+        await boardStore.add({ title: b.title, author: b.author, org: b.org || "", category: b.category, desc: b.desc, state: b.state, likes: 0 });
         closeModal(); renderBoards(); toast("커뮤니티 보드에 저장했어요");
       } else if (act === "delete") {
         await boardStore.remove(b.id); closeModal(); renderBoards(); toast("보드를 삭제했어요");
@@ -903,18 +935,19 @@
       <form class="form" id="boardForm">
         <label>제목<input name="title" required maxlength="60" placeholder="예) 코너킥 — 니어 포스트 수비 배치" /></label>
         <div class="form-row">
-          <label>코치 이름<input name="author" required maxlength="30" value="${esc(localStorage.getItem("kl_name") || "")}" placeholder="이름 또는 닉네임" /></label>
-          <label>카테고리<select name="category">${cats.map((c) => `<option>${c}</option>`).join("")}</select></label>
+          <label>작성자 이름<input name="author" required maxlength="20" value="${esc(localStorage.getItem("kl_name") || "")}" placeholder="예) 유수영" /></label>
+          <label>소속<input name="org" required maxlength="30" value="${esc(localStorage.getItem("kl_org") || "")}" placeholder="예) KEEPER LAB, ○○FC" /></label>
         </div>
+        <label>카테고리<select name="category">${cats.map((c) => `<option>${c}</option>`).join("")}</select></label>
         <label>설명 (선택)<textarea name="desc" maxlength="1000" placeholder="상황, 코칭 포인트, 선수에게 강조할 점"></textarea></label>
         <div class="form-actions"><button type="button" class="btn btn-ghost btn-sm" data-close>취소</button><button class="btn btn-solid btn-sm">저장하고 링크 복사</button></div>
       </form>`, { wide: true });
     $("#boardForm", body).addEventListener("submit", async (e) => {
       e.preventDefault();
       const f = Object.fromEntries(new FormData(e.target));
-      try { localStorage.setItem("kl_name", f.author.trim()); } catch {}
+      try { localStorage.setItem("kl_name", f.author.trim()); localStorage.setItem("kl_org", f.org.trim()); } catch {}
       const saved = await boardStore.add({
-        title: f.title.trim(), author: f.author.trim(), category: f.category, desc: f.desc.trim(), state: snap, likes: 0,
+        title: f.title.trim(), author: f.author.trim(), org: f.org.trim(), category: f.category, desc: f.desc.trim(), state: snap, likes: 0,
       });
       closeModal();
       $("#boardSearch").value = ""; $("#boardCat").value = "all";
@@ -931,7 +964,7 @@
       const d = b64.dec(m[1]);
       if (!d.s || !Array.isArray(d.s.items)) throw new Error("bad board");
       if (!d.s.v) return toast("이전 버전으로 만든 보드라 열 수 없어요");
-      boardView({ title: d.t || "공유된 보드", author: d.a || "익명", category: d.c || "", desc: d.d || "", state: d.s }, { shared: true });
+      boardView({ title: d.t || "공유된 보드", author: d.a || "익명", org: d.o || "", category: d.c || "", desc: d.d || "", state: d.s }, { shared: true });
     } catch {
       toast("공유 링크를 읽을 수 없어요");
     }

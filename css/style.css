@@ -535,8 +535,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .res-play { position: absolute; width: 58px; height: 58px; border-radius: 50%; background: var(--pure); display: grid; place-items: center; }
 .res-play::after { content: ""; border-left: 16px solid var(--black); border-block: 10px solid transparent; margin-left: 4px; }
 .res-body { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
-.res-meta { display: flex; gap: 10px; font: 12px var(--mono); color: var(--mute); text-transform: uppercase; letter-spacing: .08em; }
-.res-meta .type { color: var(--pure); }
+.res-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font: 12px var(--mono); color: var(--mute); text-transform: uppercase; letter-spacing: .08em; }
+.res-meta .type { color: var(--pure); white-space: nowrap; }
 .res-title { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -.02em; line-height: 1.4; }
 .res-desc { margin: 0; color: var(--mute); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
@@ -964,3 +964,10 @@ body.pad-full .float-social, body.pad-full .to-top { display: none; }
   input, select, textarea { font-size: 16px; }
 }
 @media (max-width: 600px) { body[data-page="tactics"] .float-social, body[data-page="tactics"] .to-top { display: none; } .pi span { font-size: 10.5px; } }
+
+/* 샵 출시 예정 */
+.soon-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; border: 1px solid #ffd23f; color: #ffd23f; font: 700 13px var(--sans); letter-spacing: 0; }
+.pd-opt-soon { grid-template-columns: 1fr; }
+.pd-soon-box { margin-top: 20px; padding: 18px; border: 1px dashed var(--line-2); border-radius: 8px; }
+.pd-soon-box p { margin: 0 0 14px; color: var(--mute-2); font-size: 14px; line-height: 1.7; }
+.pd-soon-box .soon-cta { justify-content: flex-start; }
