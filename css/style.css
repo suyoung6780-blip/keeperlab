@@ -763,6 +763,25 @@ textarea { resize: vertical; min-height: 100px; }
 .modal .article h4 { color: var(--pure); margin: 24px 0 6px; font-size: 16px; }
 .modal .article p { margin: 0 0 12px; }
 .modal .article ol, .modal .article ul { padding-left: 20px; }
+.modal .article { line-height: 1.75; }
+.modal .article .lead { color: var(--pure); font-size: 17px; font-weight: 600; }
+.modal .article .paper-src { display: grid; gap: 4px; padding: 14px 16px; margin: 0 0 18px; border-left: 2px solid var(--pure); background: rgba(255,255,255,.04); }
+.modal .article .paper-src b { color: var(--pure); font-weight: 600; }
+.modal .article .paper-src span { font: 12px var(--mono); color: var(--mute); }
+.modal .article .pull { color: var(--pure); font-weight: 700; font-size: 16px; padding-left: 14px; border-left: 2px solid var(--line-2); }
+.modal .article .keys { color: var(--pure); font-weight: 600; }
+.modal .article h4 { margin-top: 36px; }
+.modal .article .flow { list-style: none; padding: 0; margin: 4px 0 16px; display: grid; gap: 8px; }
+.modal .article .flow li { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; padding: 10px 14px; border: 1px solid var(--line); border-radius: 6px; position: relative; }
+.modal .article .flow li + li::before { content: "↓"; position: absolute; top: -17px; left: 20px; color: var(--mute); font-size: 12px; }
+.modal .article .flow b { color: var(--pure); }
+.modal .article .flow span { color: var(--mute); font-size: 13px; }
+.modal .article .ages { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 4px 0 16px; }
+.modal .article .ages dt { font: 700 13px var(--mono); color: var(--pure); }
+.modal .article .ages dd { margin: 0; }
+.modal .article .thought { margin-top: 40px; padding: 22px 22px 8px; border: 1px solid var(--line-2); border-radius: 8px; }
+.modal .article .thought h4 { margin-top: 0; letter-spacing: .1em; font-family: var(--mono); font-size: 13px; }
+.modal .article .thought .en { color: var(--pure); font-style: italic; }
 .video-wrap { position: relative; aspect-ratio: 16 / 9; background: #000; margin: 0 0 16px; border: 1px solid var(--line); }
 .video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .form { display: grid; gap: 16px; }
