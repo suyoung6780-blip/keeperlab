@@ -599,7 +599,7 @@
   const RES_SEED = [
     // 논문 — 유소년 골키퍼 선발과 발달
     {
-      id: "p1", type: "paper", title: "유소년 골키퍼 선발과 발달", author: "KEEPER LAB", createdAt: Date.parse("2026-10-08T13:00:00"),
+      id: "p1", type: "paper", title: "유소년 골키퍼 선발과 발달", author: "KEEPER LAB", img: "assets/archive/youth-gk.jpg", createdAt: Date.parse("2026-10-08T13:00:00"),
       desc: "전문가들은 어린 골키퍼의 무엇을 보고, 어떻게 성장시킬까? — 14명의 전문 GK 코치 인터뷰 연구 정리.",
       body: `<p class="lead">전문가들은 어린 골키퍼의 무엇을 보고, 어떻게 성장시킬까?</p>
         <div class="paper-src"><b>Criteria for the Selection and Development of Academy Soccer Goalkeepers: Experts’ Opinion</b><span>2025 · International Journal of Sports Science &amp; Coaching</span></div>
@@ -731,21 +731,21 @@
       desc: "골키퍼 빌드업 — 빌드업 방향 설정.",
     },
     {
-      id: "r1", type: "analysis", title: "다이빙의 시작은 발이다: 파워 스텝", author: "KEEPER LAB", createdAt: Date.parse("2026-09-12"),
+      id: "r1", type: "analysis", title: "다이빙의 시작은 발이다: 파워 스텝", author: "KEEPER LAB", img: "assets/archive/power-step.jpg", createdAt: Date.parse("2026-09-12"),
       desc: "멀리 뜨는 다이빙은 팔이 아니라 첫 스텝에서 결정됩니다. 공 방향 발로 딛는 파워 스텝의 원리.",
       body: `<h4>왜 스텝인가</h4><p>다이빙 거리의 대부분은 지면 반발력에서 나옵니다. 세트 포지션에서 공 방향 발을 짧고 강하게 사선 앞으로 딛는 것이 '파워 스텝'입니다.</p>
         <h4>체크포인트</h4><ol><li>세트 시 체중은 발 앞꿈치, 무릎은 살짝 굽힘</li><li>공 방향 발을 사선 앞으로 — 옆이 아니라 앞으로 딛어야 각도를 줄입니다</li><li>딛는 발과 같은 쪽 팔이 먼저 공 라인으로</li><li>반대쪽 무릎을 끌어올려 몸을 '띄운다'</li></ol>
         <h4>흔한 실수</h4><p>뒤로 빠지는 스텝(드롭 스텝)은 골대와의 거리를 줄여 각도를 넓혀줍니다. 영상으로 자신의 첫 스텝 방향을 꼭 확인하세요.</p>`,
     },
     {
-      id: "r2", type: "analysis", title: "1:1 상황, 언제 서고 언제 덮칠까", author: "KEEPER LAB", createdAt: Date.parse("2026-09-03"),
+      id: "r2", type: "analysis", title: "1:1 상황, 언제 서고 언제 덮칠까", author: "KEEPER LAB", img: "assets/archive/one-on-one.jpg", createdAt: Date.parse("2026-09-03"),
       desc: "공격수의 터치 거리로 판단하는 1:1 대응. 블록 자세(K-블록, 스프레드)의 선택 기준.",
       body: `<h4>판단 기준: 공과 발 사이의 거리</h4><p>공격수의 터치가 길어질 때가 전진의 신호입니다. 공이 발에 붙어 있으면 거리를 좁히며 세트하고, 터치가 길면 공을 향해 과감하게 덮칩니다.</p>
         <h4>블록의 종류</h4><ul><li><b>K-블록</b> — 근거리, 낮은 슈팅. 한쪽 무릎을 꿇고 다른 다리로 각을 막음</li><li><b>스프레드</b> — 초근거리. 몸 전체를 펼쳐 면적을 최대화</li><li><b>스탠딩</b> — 거리가 남아 있고 칩슛 위험이 있을 때</li></ul>
         <h4>원칙</h4><p>먼저 넘어지지 않는다. 공격수가 결정하게 만들고, 그 순간에 반응합니다.</p>`,
     },
     {
-      id: "r3", type: "analysis", title: "크로스 처리: 나갈까, 남을까", author: "KEEPER LAB", createdAt: Date.parse("2026-08-21"),
+      id: "r3", type: "analysis", title: "크로스 처리: 나갈까, 남을까", author: "KEEPER LAB", img: "assets/archive/cross.jpg", createdAt: Date.parse("2026-08-21"),
       desc: "크로스 상황에서 골키퍼가 내려야 하는 세 가지 판단 — 궤적, 트래픽, 콜.",
       body: `<h4>1. 시작 위치</h4><p>크로스 쪽 포스트에서 1~2m 앞, 골대 중앙 쪽으로 열린 자세. 몸을 공과 박스 안쪽 모두 볼 수 있게 엽니다.</p>
         <h4>2. 궤적 읽기</h4><p>공이 떠나는 순간 높이·속도·회전을 읽고 결정합니다. 망설임이 가장 큰 실점 원인입니다.</p>
@@ -765,10 +765,11 @@
     const items = (await resStore.list()).filter((r) => TYPE_NAME[r.type] && (resFilter === "all" || typeOf(r) === resFilter));
     $("#resGrid").innerHTML = items.length ? items.map((r) => {
       const yt = ytId(r.url);
-      const thumb = yt ? `style="background-image:url('https://i.ytimg.com/vi/${yt}/hqdefault.jpg')"` : "";
+      const pic = yt ? `https://i.ytimg.com/vi/${yt}/hqdefault.jpg` : r.img;
+      const thumb = pic ? `style="background-image:url('${esc(pic)}')"` : "";
       const glyph = { video: "PLAY", paper: "PAPER", analysis: "ANALYSIS" }[typeOf(r)];
       return `<button class="res-card" data-res="${r.id}">
-        <div class="res-thumb" ${thumb}>${yt ? "" : `<span class="res-glyph">${glyph}</span>`}${r.type === "video" ? `<span class="res-play"></span>` : ""}</div>
+        <div class="res-thumb" ${thumb}>${pic ? "" : `<span class="res-glyph">${glyph}</span>`}${r.type === "video" ? `<span class="res-play"></span>` : ""}</div>
         <div class="res-body">
           <div class="res-meta"><span class="type">${TYPE_NAME[r.type]}</span><span>${esc(byline(r))}</span><span>${fmtDate(r.createdAt)}</span></div>
           <h3 class="res-title">${esc(r.title)}</h3>
@@ -787,7 +788,9 @@
     const card = e.target.closest("[data-res]"); if (!card) return;
     const r = await resStore.get(card.dataset.res); if (!r) return;
     const yt = ytId(r.url);
-    const media = yt
+    const media = !yt && r.img
+      ? `<img class="article-cover" src="${esc(r.img)}" alt="" />`
+      : yt
       ? `<div class="video-wrap"><iframe src="https://www.youtube-nocookie.com/embed/${yt}?autoplay=1" title="${esc(r.title)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`
       : "";
     const body = r.body || (r.desc ? `<p style="white-space:pre-wrap">${esc(r.desc)}</p>` : "");
