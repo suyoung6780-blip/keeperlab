@@ -181,7 +181,7 @@
           <p class="sec-kicker">Keeper Training</p>
           <h2 class="sec-title">골키퍼 전문 코치의<br />트레이닝</h2>
         </div>
-        <p class="sec-desc">KEEPER LAB 코치가 선수의 수준에 맞춰 지도합니다. 1회 체험부터 시작할 수 있고, 신청서를 남기면 담당자가 연락드려 일정과 장소, 비용을 안내해 드려요.</p>
+        <p class="sec-desc">KEEPER LAB 코치가 선수의 수준에 맞춰 지도합니다. 1회 무료 체험으로 부담 없이 시작할 수 있고, 신청서를 남기면 담당자가 연락드려 일정과 장소를 안내해 드려요.</p>
       </header>
 
       <div class="lesson-info" id="lessonInfo"></div>
@@ -189,14 +189,23 @@
       <div class="lesson-grid" id="lessonGrid"></div>
 
       <ol class="lesson-steps" aria-label="레슨 진행 방식">
-        <li><span>01</span><h3>신청서 작성</h3><p>체험 또는 횟수권을 고르고 연락처와 희망 일정을 남겨주세요. 신청 단계에서는 결제하지 않아요.</p></li>
+        <li><span>01</span><h3>신청서 작성</h3><p>체험 신청서에 연락처와 희망 지역 · 일정을 남겨주세요.</p></li>
         <li><span>02</span><h3>담당자 연락</h3><p>남겨주신 연락처로 담당자가 연락드려 레슨 일정과 장소를 조율합니다.</p></li>
-        <li><span>03</span><h3>레슨 시작</h3><p>확정된 일정에 맞춰 전담 코치와 레슨을 진행합니다.</p></li>
+        <li><span>03</span><h3>무료 체험 레슨</h3><p>확정된 일정에 맞춰 KEEPER LAB 코치와 1회 무료 체험 레슨을 진행합니다.</p></li>
       </ol>
 
       <div class="lesson-cta">
-        <p>어떤 횟수권이 맞을지 모르겠다면, 상담부터 신청하세요.</p>
+        <p>궁금한 점이 있다면, 상담부터 신청하세요.</p>
         <button class="btn btn-ghost" data-apply="consult">상담 먼저 신청하기</button>
+      </div>
+
+      <div class="fb-section" id="feedback">
+        <div class="fb-head">
+          <p class="sec-kicker">Training Feedback · 선수 전용</p>
+          <h3>트레이닝 피드백</h3>
+          <p>KEEPER LAB 트레이닝을 받는 선수 전용이에요. 내 이름 옆에 비밀번호(휴대폰 뒷자리 4자리)를 입력하면 코치의 피드백을 볼 수 있어요.</p>
+        </div>
+        <div id="fbPanel"></div>
       </div>
     </section>
 
@@ -331,5 +340,7 @@
   <script src="js/store.js"></script>
   <script src="js/tactics3d.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/feedback.js"></script>
 </body>
 </html>

@@ -1,0 +1,39 @@
+rules_version = '2';
+// KEEPER LAB 트레이닝 피드백
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'admin@keeperlab.co.kr';
+    }
+    function isPlayer(pid) {
+      return request.auth != null
+        && get(/databases/$(db)/documents/players/$(pid)).data.uid == request.auth.uid;
+    }
+
+    match /players/{pid} {
+      // 누구나: 가려진 이름(유*영)만 들어 있는 목록
+      allow read: if true;
+      allow write: if isAdmin();
+
+      // 이름 · 소속 · 비밀번호: 관리자와 그 선수 본인만
+      match /private/{doc} {
+        allow read: if isAdmin() || isPlayer(pid);
+        allow write: if isAdmin();
+      }
+
+      // 피드백: 관리자와 그 선수 본인만. 선수는 '확인' 체크만 바꿀 수 있어요
+      match /feedback/{fid} {
+        allow read: if isAdmin() || isPlayer(pid);
+        allow create, delete: if isAdmin();
+        allow update: if isAdmin()
+          || (isPlayer(pid)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checked', 'checkedAt'])
+              && request.resource.data.checked == true);
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

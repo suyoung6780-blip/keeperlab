@@ -420,13 +420,11 @@
   }
 
   /* =========================================================
-     03 TRAINING — 횟수권 + 레슨 신청서 (결제 없음, 담당자가 연락)
+     03 TRAINING — 1회 무료 체험 + 신청서 (결제 없음, 담당자가 연락)
      ========================================================= */
   const LESSON_PHONE = LESSON_PHONE_SHARED();
   const LESSONS = [
-    { id: "l1", count: 1, name: "1회 체험", cta: "체험 신청하기", note: "처음이라면 체험부터", desc: "처음 만나는 체험 레슨, 또는 특정 기술 하나를 집중 교정하는 원포인트 레슨.", points: ["수준별 맞춤 지도", "현재 수준 진단과 피드백"] },
-    { id: "l4", count: 4, name: "4회권", cta: "문의하기", note: "가격은 문의해 주세요", desc: "기본기를 체계적으로 다지는 한 달 과정 (주 1회 기준).", points: ["수준별 맞춤 지도", "수준 진단 후 4회 커리큘럼 구성", "회차별 피드백"] },
-    { id: "l8", count: 8, name: "8회권", cta: "문의하기", note: "가격은 문의해 주세요", desc: "시즌 준비나 입시처럼 확실한 변화가 필요한 선수를 위한 과정.", points: ["수준별 맞춤 지도", "수준 진단 후 8회 커리큘럼 구성", "회차별 피드백"] },
+    { id: "l1", count: 1, name: "1회 무료 체험", cta: "체험 신청하기", note: "처음 1회는 무료예요", desc: "KEEPER LAB 코치와 처음 만나는 무료 체험 레슨. 현재 수준을 진단하고, 앞으로 무엇을 연습하면 좋을지 알려드려요.", points: ["수준별 맞춤 지도", "현재 수준 진단과 피드백", "부담 없이 1회 무료"] },
   ];
   const lessonReqs = Store.collection("kl_lesson_requests_v1", []);
 
@@ -442,6 +440,7 @@
     { id: "bang", name: "방하승", role: "GK 코치", photo: "assets/coaches/bang.jpg" },
   ];
   const ALL_AREAS = REGIONS.flatMap((r) => r.areas);
+  window.KL_REGIONS = REGIONS; // 트레이닝 피드백(선수 지역)에서도 같은 지역 목록을 써요
 
   function renderLessonInfo() {
     $("#lessonInfo").innerHTML = `
@@ -479,30 +478,42 @@
         <p>${l.desc}</p>
         <ul>${l.points.map((p) => `<li>${p}</li>`).join("")}</ul>
         <div class="lesson-price">
-          <div><strong class="lesson-ask">${l.count === 1 ? "체험" : "문의"}</strong><small>${l.note}</small></div>
+          <div><strong class="lesson-ask">무료</strong><small>${l.note}</small></div>
           <button class="btn btn-solid btn-sm" data-apply="${l.id}">${l.cta}</button>
         </div>
-      </article>`).join("");
+      </article>`).join("") + `
+      <article class="lesson fb-teaser">
+        <div class="lesson-count"><b>GK</b><span>선수 전용</span></div>
+        <h3>트레이닝 피드백</h3>
+        <p>KEEPER LAB 트레이닝을 받는 선수라면, 코치가 남긴 나만의 피드백을 언제든 다시 볼 수 있어요.</p>
+        <ul><li>훈련 주제 · 잘한 점 · 개선할 점</li><li>적용점과 한 주 동안 과제</li><li>비밀번호(휴대폰 뒷자리 4자리)로 나만 보기</li></ul>
+        <div class="lesson-price">
+          <div><strong class="lesson-ask">MY</strong><small>내 피드백 확인하기</small></div>
+          <a class="btn btn-ghost btn-sm" href="#feedback" data-goto-fb>피드백 보러 가기 ↓</a>
+        </div>
+      </article>`;
   }
 
   $("#training").addEventListener("click", (e) => {
+    const g = e.target.closest("[data-goto-fb]");
+    if (g) { e.preventDefault(); $("#feedback").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     const b = e.target.closest("[data-apply]");
     if (b) openApply(b.dataset.apply);
   });
 
   function openApply(selected) {
     const body = openModal(`
-      <h3>레슨 신청</h3>
-      <div class="meta">신청서를 남기면 담당자가 연락드려 일정과 장소를 조율해요 · 지금은 결제하지 않아요</div>
+      <h3>${selected === "consult" ? "상담 신청" : "무료 체험 신청"}</h3>
+      <div class="meta">신청서를 남기면 담당자가 연락드려 일정과 장소를 조율해요 · 체험은 무료예요</div>
       <form class="form" id="applyForm">
         <div class="form-row">
           <label>이름<input name="name" required maxlength="30" autocomplete="name" /></label>
           <label>연락처<input name="phone" type="tel" required inputmode="tel" autocomplete="tel" placeholder="010-0000-0000" /></label>
         </div>
         <div class="form-row">
-          <label>횟수권<select name="plan">
-            ${LESSONS.map((l) => `<option value="${l.id}" ${l.id === selected ? "selected" : ""}>${l.name}${l.count > 1 ? " (문의)" : ""}</option>`).join("")}
-            <option value="consult" ${selected === "consult" ? "selected" : ""}>아직 모르겠어요 (상담 먼저)</option>
+          <label>신청 종류<select name="plan">
+            ${LESSONS.map((l) => `<option value="${l.id}" ${l.id === selected ? "selected" : ""}>${l.name}</option>`).join("")}
+            <option value="consult" ${selected === "consult" ? "selected" : ""}>상담 먼저 받고 싶어요</option>
           </select></label>
           <label>선수 구분<select name="level">
             <option>입문 · 취미</option><option>유소년 선수</option><option>중·고등 선수</option><option>성인 아마추어</option><option>기타</option>

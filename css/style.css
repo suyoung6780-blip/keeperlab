@@ -991,3 +991,47 @@ body.pad-full .float-social, body.pad-full .to-top { display: none; }
 .pd-soon-box { margin-top: 20px; padding: 18px; border: 1px dashed var(--line-2); border-radius: 8px; }
 .pd-soon-box p { margin: 0 0 14px; color: var(--mute-2); font-size: 14px; line-height: 1.7; }
 .pd-soon-box .soon-cta { justify-content: flex-start; }
+
+/* ---------- training feedback (선수 전용) ---------- */
+.fb-section { margin-top: 72px; padding: clamp(24px, 4vw, 44px); border: 1px solid var(--line-2); border-radius: 10px; background: linear-gradient(180deg, var(--ink-2), var(--ink)); scroll-margin-top: 140px; }
+.fb-head .sec-kicker { color: #ffd23f; }
+.fb-teaser { border-color: #ffd23f55; }
+.fb-teaser .lesson-count b { color: #ffd23f; }
+.fb-chips { margin: 0 0 14px; }
+.fb-region { font-style: normal; font: 600 11px var(--mono); color: var(--black); background: var(--mute-2); padding: 2px 8px; border-radius: 999px; letter-spacing: .02em; align-self: center; }
+.fb-help { margin: 14px 0 0; color: var(--mute); font-size: 13px; }
+.fb-head h3 { margin: 4px 0 8px; font-size: clamp(24px, 3vw, 32px); letter-spacing: -.03em; }
+.fb-head p:last-child { margin: 0 0 24px; color: var(--mute-2); max-width: 640px; }
+.fb-bar { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.fb-admin-link { background: none; border: 0; color: var(--mute); font: 12px var(--mono); letter-spacing: .08em; cursor: pointer; padding: 6px 0; }
+.fb-admin-link:hover { color: var(--pure); }
+.fb-admin-on { margin-right: auto; font: 700 12px var(--mono); color: #ffd23f; letter-spacing: .08em; }
+.fb-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.fb-row { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; padding: 14px 4px; border-bottom: 1px solid var(--line); }
+.fb-who { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.fb-who b { font-size: 17px; }
+.fb-who span { color: var(--mute); font-size: 13px; }
+.fb-pin { display: flex; gap: 8px; }
+.fb-pin input { width: 132px; min-height: 38px; padding: 0 12px; background: var(--ink-2); border: 1px solid var(--line-2); border-radius: var(--radius); color: var(--pure); font: 15px var(--sans); letter-spacing: .2em; }
+.fb-pin input::placeholder { letter-spacing: 0; color: var(--mute); font-size: 13px; }
+.fb-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.fb-empty { padding: 40px 20px; text-align: center; color: var(--mute); border: 1px dashed var(--line-2); border-radius: var(--radius); }
+.fb-cards { display: grid; gap: 14px; }
+.fb-card { padding: 18px 20px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--ink); }
+.fb-card.is-checked { border-color: var(--line); }
+.fb-card header { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font: 12px var(--mono); color: var(--mute); letter-spacing: .06em; }
+.fb-card .fb-state { color: #ffd23f; }
+.fb-card.is-checked .fb-state { color: #7bd88f; }
+.fb-card h4 { margin: 6px 0 10px; font-size: 18px; color: var(--pure); }
+.fb-card dl { margin: 0 0 4px; display: grid; grid-template-columns: 110px 1fr; gap: 8px 14px; }
+.fb-card dt { color: var(--mute); font-size: 13px; font-weight: 600; padding-top: 2px; }
+.fb-card dd { margin: 0; color: var(--mute-2); }
+.fb-card .fb-check, .fb-card .fb-acts { margin-top: 14px; }
+.fb-note { margin: 16px 0 0; color: var(--mute); font-size: 13px; }
+.fb-danger { margin-right: auto; color: #ff8a8a; border-color: #5a2a2a; }
+@media (max-width: 600px) {
+  .fb-row { align-items: stretch; flex-direction: column; }
+  .fb-pin input { flex: 1; width: auto; }
+  .fb-card dl { grid-template-columns: 1fr; gap: 2px; }
+  .fb-card dd { margin-bottom: 8px; }
+}
