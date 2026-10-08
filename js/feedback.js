@@ -7,14 +7,11 @@
    관리자 번호와 선수 비밀번호는 코드에 적혀 있지 않아요 (Firebase 로그인 비밀번호로만 존재).
    ========================================================= */
 (function () {
-  const cfg = window.KL_FIREBASE;
   const root = document.getElementById("fbPanel");
   if (!root) return;
 
-  const ADMIN_EMAIL = "admin@keeperlab.co.kr";
   const playerEmail = (pid) => `p-${pid.toLowerCase()}@players.keeperlab.co.kr`;
   const playerPass = (pin) => `KL-${pin}-gk`; // Firebase 비밀번호는 6자 이상이라 앞뒤를 붙여요
-  const SDK = "https://www.gstatic.com/firebasejs/10.12.5/";
 
   const $ = (s, r = document) => r.querySelector(s);
   const esc = (s = "") => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -44,43 +41,11 @@
     t.textContent = msg; t.classList.add("show");
     clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2400);
   }
-  const authError = (e) => {
-    const c = (e && e.code) || "";
-    if (/wrong-password|invalid-credential|invalid-login|user-not-found/.test(c)) return "번호가 맞지 않아요.";
-    if (/too-many-requests/.test(c)) return "여러 번 틀려서 잠시 막혔어요. 몇 분 뒤에 다시 해주세요.";
-    if (/network/.test(c)) return "인터넷 연결을 확인해 주세요.";
-    return "문제가 생겼어요. 잠시 후 다시 해주세요.";
-  };
+  /* ---------- Firebase 연결은 js/kl-firebase.js (아카이브와 같이 써요) ---------- */
+  let fb = null;
+  const boot = () => KLFB.boot().then((x) => (fb = x));
+  const { helperAuth, isAdmin, authError } = KLFB;
 
-  /* ---------- Firebase (트레이닝 페이지를 열 때만 불러와요) ---------- */
-  let fb = null, loading = null;
-  const loadScript = (src) => new Promise((ok, no) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
-  function boot() {
-    if (fb) return Promise.resolve(fb);
-    if (loading) return loading;
-    loading = (async () => {
-      if (!window.firebase) {
-        await loadScript(SDK + "firebase-app-compat.js");
-        await Promise.all([loadScript(SDK + "firebase-auth-compat.js"), loadScript(SDK + "firebase-firestore-compat.js")]);
-      }
-      const app = firebase.initializeApp(cfg);
-      const auth = app.auth();
-      await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION); // 브라우저 탭을 닫으면 로그아웃
-      fb = { app, auth, db: app.firestore(), FV: firebase.firestore.FieldValue };
-      await new Promise((r) => { const off = auth.onAuthStateChanged(() => { off(); r(); }); });
-      return fb;
-    })();
-    return loading;
-  }
-  // 선수 계정을 만들거나 비밀번호를 바꿀 때 관리자 로그인이 풀리지 않도록 보조 연결을 따로 써요
-  function helperAuth() {
-    const name = "kl-helper";
-    const app = firebase.apps.find((a) => a.name === name) || firebase.initializeApp(cfg, name);
-    const a = app.auth();
-    return a.setPersistence(firebase.auth.Auth.Persistence.NONE).then(() => a);
-  }
-
-  const isAdmin = () => !!(fb && fb.auth.currentUser && fb.auth.currentUser.email === ADMIN_EMAIL);
   let players = [];
   let regionFilter = "all";
   const regions = () => window.KL_REGIONS || [];
@@ -92,7 +57,7 @@
 
   /* ---------- 목록 ---------- */
   async function render(cached) {
-    if (!cfg || !cfg.apiKey) {
+    if (!KLFB.ready()) {
       root.innerHTML = `<div class="fb-empty">피드백 기능 준비 중이에요.</div>`;
       return;
     }
@@ -205,31 +170,16 @@
     } catch (err) { console.error(err); b.disabled = false; toast("저장하지 못했어요. 다시 눌러주세요."); }
   });
   // 선수 창을 닫으면 바로 로그아웃 (같은 기기를 다른 사람이 써도 안전하게)
-  modal.addEventListener("close", () => {
+  const leavePlayer = () => {
     if (viewingPid && fb && !isAdmin()) fb.auth.signOut();
     viewingPid = null;
-  });
+  };
+  modal.addEventListener("close", leavePlayer);
+  // 창이 닫히는 순간을 직접 지켜봐요 (close 이벤트가 늦거나 안 와도 로그아웃되게)
+  new MutationObserver(() => { if (!modal.open) { leavePlayer(); modalBody.onclick = null; } }).observe(modal, { attributes: true, attributeFilter: ["open"] });
 
   /* ---------- 관리자 ---------- */
-  function adminLogin() {
-    const body = openModal(`
-      <h3>관리자</h3><div class="meta">관리자 번호를 입력해 주세요</div>
-      <form class="form" id="fbAdminForm">
-        <label>관리자 번호<input name="code" type="password" inputmode="numeric" autocomplete="off" required /></label>
-        <div class="form-actions"><button type="button" class="btn btn-ghost btn-sm" data-close>취소</button><button class="btn btn-solid btn-sm">들어가기</button></div>
-      </form>`);
-    const f = $("#fbAdminForm", body);
-    f.code.focus();
-    f.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const btn = f.querySelector(".btn-solid"); btn.disabled = true;
-      try {
-        await boot();
-        await fb.auth.signInWithEmailAndPassword(ADMIN_EMAIL, f.code.value.trim());
-        closeModal(); toast("관리자 모드예요"); render();
-      } catch (err) { toast(authError(err)); btn.disabled = false; }
-    });
-  }
+  const adminLogin = () => KLFB.adminLogin({ openModal: (h) => openModal(h), closeModal, toast });
 
   function playerForm(p) {
     const editing = !!p;
@@ -365,7 +315,7 @@
     const p = players.find((x) => x.id === b.dataset.pid);
     if (act === "admin") return adminLogin();
     if (!isAdmin()) return;
-    if (act === "logout") { await fb.auth.signOut(); toast("관리자 모드를 나왔어요"); return render(); }
+    if (act === "logout") { await KLFB.signOut(); toast("관리자 모드를 나왔어요"); return; }
     if (act === "add") return playerForm();
     if (act === "edit" && p) return playerForm(p);
     if (act === "write" && p) return feedbackForm(p);
@@ -379,6 +329,7 @@
 
   /* 트레이닝 페이지를 처음 열 때 불러와요 */
   let started = false;
+  KLFB.onAuth(() => { if (started) render(); }); // 관리자 로그인/로그아웃하면 목록을 다시 그려요
   const maybeStart = () => {
     if (started || !location.hash.startsWith("#/training")) return;
     started = true; render();

@@ -742,7 +742,39 @@
       desc: "골키퍼 빌드업 — 빌드업 방향 설정.",
     },
   ];
-  const resStore = Store.collection("kl_resources_v2", RES_SEED);
+  // 기본 글(RES_SEED) + 방문자가 올린 글(Firebase, 관리자가 승인한 것만 공개)
+  let resRemote = [], resLoaded = false;
+  const resAll = () => [...RES_SEED, ...resRemote].sort((a, b) => b.createdAt - a.createdAt);
+  async function loadRemoteRes() {
+    if (!window.KLFB || !KLFB.ready()) return;
+    try {
+      const { db } = await KLFB.boot();
+      const col = db.collection("archive");
+      const snap = await (KLFB.isAdmin() ? col.get() : col.where("status", "==", "approved").get());
+      resRemote = snap.docs.map((d) => {
+        const x = d.data();
+        return { ...x, id: d.id, remote: true, createdAt: x.createdAt && x.createdAt.toMillis ? x.createdAt.toMillis() : Date.now() };
+      });
+      resLoaded = true;
+      renderResources();
+    } catch (e) { console.error(e); }
+  }
+  function renderResAdmin() {
+    const box = $("#resAdmin"); if (!box) return;
+    if (!window.KLFB || !KLFB.ready()) { box.innerHTML = ""; return; }
+    const waiting = resRemote.filter((r) => r.status !== "approved").length;
+    box.innerHTML = KLFB.isAdmin()
+      ? `<span class="fb-admin-on">관리자 모드</span><span class="res-wait">승인 대기 ${waiting}개</span><button class="btn btn-ghost btn-sm" data-res-admin="out">관리자 나가기</button>`
+      : `<button class="fb-admin-link" data-res-admin="in">관리자</button>`;
+  }
+  $("#resAdmin") && $("#resAdmin").addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-res-admin]"); if (!b) return;
+    if (b.dataset.resAdmin === "in") KLFB.adminLogin({ openModal: (h) => openModal(h), closeModal, toast });
+    else { await KLFB.signOut(); toast("관리자 모드를 나왔어요"); }
+  });
+  if (window.KLFB) KLFB.onAuth(() => { if (resLoaded) loadRemoteRes(); renderResAdmin(); });
+  window.addEventListener("hashchange", () => { if (location.hash.startsWith("#/archive") && !resLoaded) loadRemoteRes(); });
+  if (location.hash.startsWith("#/archive")) loadRemoteRes();
   // 영상(유튜브 바로 재생) · 논문 · 기타
   const TYPE_NAME = { video: "영상", paper: "논문", analysis: "기타", article: "기타" };
   const typeOf = (r) => (r.type === "article" ? "analysis" : r.type);
@@ -752,13 +784,16 @@
   let resFilter = "all";
 
   async function renderResources() {
-    const items = (await resStore.list()).filter((r) => TYPE_NAME[r.type] && (resFilter === "all" || typeOf(r) === resFilter));
+    renderResAdmin();
+    const admin = window.KLFB && KLFB.isAdmin();
+    const items = resAll().filter((r) => TYPE_NAME[r.type] && (resFilter === "all" || typeOf(r) === resFilter));
     $("#resGrid").innerHTML = items.length ? items.map((r) => {
       const yt = ytId(r.url);
       const pic = yt ? `https://i.ytimg.com/vi/${yt}/hqdefault.jpg` : r.img;
       const thumb = pic ? `style="background-image:url('${esc(pic)}')"` : "";
       const glyph = { video: "PLAY", paper: "PAPER", analysis: "ETC" }[typeOf(r)];
-      return `<button class="res-card" data-res="${r.id}">
+      const wait = r.remote && r.status !== "approved";
+      return `<button class="res-card${wait ? " is-waiting" : ""}" data-res="${r.id}">${wait && admin ? `<span class="res-badge">승인 대기</span>` : ""}
         <div class="res-thumb" ${thumb}>${pic ? "" : `<span class="res-glyph">${glyph}</span>`}${r.type === "video" ? `<span class="res-play"></span>` : ""}</div>
         <div class="res-body">
           <div class="res-meta"><span class="type">${TYPE_NAME[r.type]}</span><span>${esc(byline(r))}</span><span>${fmtDate(r.createdAt)}</span></div>
@@ -776,7 +811,7 @@
 
   $("#resGrid").addEventListener("click", async (e) => {
     const card = e.target.closest("[data-res]"); if (!card) return;
-    const r = await resStore.get(card.dataset.res); if (!r) return;
+    const r = resAll().find((x) => x.id === card.dataset.res); if (!r) return;
     const yt = ytId(r.url);
     const media = !yt && r.img
       ? `<img class="article-cover" src="${esc(r.img)}" alt="" />`
@@ -785,13 +820,25 @@
       : "";
     const body = r.body || buildBody(r);
     const link = r.url && !yt ? `<p><a class="btn btn-ghost btn-sm" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${typeOf(r) === "paper" ? "논문 원문 보기 ↗" : "원본 링크 열기 ↗"}</a></p>` : "";
-    const del = r.mine ? `<div class="form-actions"><button class="btn btn-ghost btn-sm" data-del-res="${r.id}">삭제</button></div>` : "";
+    const del = r.remote && window.KLFB && KLFB.isAdmin()
+      ? `<div class="form-actions res-review">${r.status !== "approved" ? `<span>승인 대기 중인 글이에요</span><button class="btn btn-solid btn-sm" data-ok-res="${r.id}">승인하고 공개</button>` : ""}<button class="btn btn-ghost btn-sm" data-del-res="${r.id}">삭제</button></div>`
+      : "";
     openModal(`${media}<h3>${esc(resTitle(r))}</h3><div class="meta">${TYPE_NAME[r.type]} · ${esc(byline(r))} · ${fmtDate(r.createdAt)}</div><div class="article">${body}</div>${link}${del}`, { wide: !!yt });
   });
 
   $("#modalBody").addEventListener("click", async (e) => {
+    const ok = e.target.closest("[data-ok-res]");
+    if (ok) {
+      await KLFB.fb.db.doc(`archive/${ok.dataset.okRes}`).update({ status: "approved", approvedAt: KLFB.fb.FV.serverTimestamp() });
+      closeModal(); await loadRemoteRes(); toast("승인했어요. 이제 모두에게 보여요");
+      return;
+    }
     const d = e.target.closest("[data-del-res]");
-    if (d) { await resStore.remove(d.dataset.delRes); closeModal(); renderResources(); toast("삭제했어요"); }
+    if (d) {
+      if (d.dataset.sure !== "1") { d.dataset.sure = "1"; d.textContent = "한 번 더 누르면 삭제"; return; }
+      await KLFB.fb.db.doc(`archive/${d.dataset.delRes}`).delete();
+      closeModal(); await loadRemoteRes(); toast("삭제했어요");
+    }
   });
 
   /* ---------- 올린 글을 KEEPER LAB 서식으로 보여주기 ---------- */
@@ -824,13 +871,13 @@
       <label>강조 문장 (선택)<input name="spull" maxlength="200" placeholder="굵게 강조해서 보여줄 한 문장" /></label>
       <button type="button" class="btn btn-ghost btn-sm" data-sec-del>이 대주제 빼기</button>
     </fieldset>`;
-  async function photoData(file) { // 사진을 1200px로 줄여서 저장
+  async function photoData(file) { // 사진을 1000px로 줄여서 저장
     if (!file || !file.size) return "";
     const img = await createImageBitmap(file);
-    const k = Math.min(1, 1200 / img.width);
+    const k = Math.min(1, 1000 / img.width);
     const c = Object.assign(document.createElement("canvas"), { width: Math.round(img.width * k), height: Math.round(img.height * k) });
     c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-    return c.toDataURL("image/jpeg", 0.8);
+    return c.toDataURL("image/jpeg", 0.72);
   }
 
   $("#resShareBtn").addEventListener("click", () => {
@@ -920,11 +967,21 @@
         else Object.assign(item, { url: v("a_url"), intro: v("a_intro") });
       }
       try { localStorage.setItem("kl_name", item.author); localStorage.setItem("kl_org", item.org); } catch {}
-      try { await resStore.add(item); } catch { return toast("저장 공간이 부족해요. 사진을 빼고 다시 해주세요"); }
-      closeModal();
-      resFilter = "all"; setChips($("#resFilters"), $("#resFilters .chip"));
-      renderResources();
-      toast("아카이브에 공유했어요");
+      if (!window.KLFB || !KLFB.ready()) return toast("지금은 올릴 수 없어요. 잠시 후 다시 해주세요");
+      const btn = form.querySelector(".btn-solid"); btn.disabled = true;
+      try {
+        const { db, FV } = await KLFB.boot();
+        const admin = KLFB.isAdmin();
+        Object.keys(item).forEach((k) => { if (item[k] === "" || (Array.isArray(item[k]) && !item[k].length)) delete item[k]; });
+        await db.collection("archive").add({ ...item, status: admin ? "approved" : "pending", createdAt: FV.serverTimestamp() });
+        closeModal();
+        resFilter = "all"; setChips($("#resFilters"), $("#resFilters .chip"));
+        await loadRemoteRes(); renderResources();
+        toast(admin ? "아카이브에 올렸어요" : "올렸어요! 관리자 확인 후 공개돼요");
+      } catch (err) {
+        console.error(err); btn.disabled = false;
+        toast("올리지 못했어요. 사진이 너무 크면 빼고 다시 해주세요");
+      }
     });
   });
 

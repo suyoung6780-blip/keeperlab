@@ -1059,3 +1059,10 @@ body.pad-full .float-social, body.pad-full .to-top { display: none; }
 .form-hint { margin: 0; color: var(--mute); font-size: 13px; }
 .form-hint b { color: var(--mute-2); }
 .modal .article .res-src { font: 12px var(--mono); color: var(--mute); letter-spacing: .04em; }
+.res-admin { margin: -8px 0 16px; }
+.res-wait { font: 12px var(--mono); color: var(--mute-2); margin-right: auto; }
+.res-card { position: relative; }
+.res-card.is-waiting { outline: 1px dashed #ffd23f88; outline-offset: -1px; }
+.res-badge { position: absolute; top: 10px; left: 10px; z-index: 2; padding: 3px 10px; border-radius: 999px; background: #ffd23f; color: #111; font: 700 12px var(--sans); filter: none; }
+.res-review { justify-content: flex-start; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); }
+.res-review span { color: #ffd23f; font-size: 13px; margin-right: auto; }

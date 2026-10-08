@@ -32,6 +32,24 @@ service cloud.firestore {
       }
     }
 
+    // 아카이브: 누구나 올릴 수 있지만 '승인 대기'로 들어가고, 관리자가 승인해야 공개돼요
+    match /archive/{id} {
+      allow read: if resource.data.status == 'approved' || isAdmin();
+      allow create: if isAdmin() || validPending(request.resource.data);
+      allow update, delete: if isAdmin();
+    }
+    function validPending(d) {
+      return d.status == 'pending'
+        && d.keys().hasOnly(['type', 'author', 'org', 'topic', 'title', 'channel', 'url', 'desc', 'lead',
+                             'srcTitle', 'srcInfo', 'intro', 'sections', 'thought', 'img', 'status', 'createdAt'])
+        && d.type in ['video', 'paper', 'analysis']
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 120
+        && d.author is string && d.author.size() > 0 && d.author.size() <= 20
+        && d.createdAt == request.time
+        && (!('img' in d) || (d.img is string && d.img.size() < 750000 && d.img.matches('^data:image/jpeg;base64,.*')))
+        && (!('sections' in d) || (d.sections is list && d.sections.size() <= 30));
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
