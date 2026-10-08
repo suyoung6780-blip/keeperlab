@@ -732,8 +732,8 @@
     },
   ];
   const resStore = Store.collection("kl_resources_v2", RES_SEED);
-  // 영상(유튜브 바로 재생) · 논문 · 분석
-  const TYPE_NAME = { video: "영상", paper: "논문", analysis: "분석", article: "분석" };
+  // 영상(유튜브 바로 재생) · 논문 · 기타
+  const TYPE_NAME = { video: "영상", paper: "논문", analysis: "기타", article: "기타" };
   const typeOf = (r) => (r.type === "article" ? "analysis" : r.type);
   // 작성자 표시: 이름 (소속)
   const byline = (o) => (o.org ? `${o.author} (${o.org})` : o.author || "");
@@ -746,7 +746,7 @@
       const yt = ytId(r.url);
       const pic = yt ? `https://i.ytimg.com/vi/${yt}/hqdefault.jpg` : r.img;
       const thumb = pic ? `style="background-image:url('${esc(pic)}')"` : "";
-      const glyph = { video: "PLAY", paper: "PAPER", analysis: "ANALYSIS" }[typeOf(r)];
+      const glyph = { video: "PLAY", paper: "PAPER", analysis: "ETC" }[typeOf(r)];
       return `<button class="res-card" data-res="${r.id}">
         <div class="res-thumb" ${thumb}>${pic ? "" : `<span class="res-glyph">${glyph}</span>`}${r.type === "video" ? `<span class="res-play"></span>` : ""}</div>
         <div class="res-body">
@@ -755,7 +755,7 @@
           <p class="res-desc">${esc(r.desc)}</p>
         </div>
       </button>`;
-    }).join("") : `<div class="empty">${{ video: "아직 올라온 영상이 없어요.", paper: "아직 올라온 논문이 없어요.", analysis: "아직 올라온 분석 자료가 없어요." }[resFilter] || "자료가 없어요."}</div>`;
+    }).join("") : `<div class="empty">${{ video: "아직 올라온 영상이 없어요.", paper: "아직 올라온 논문이 없어요.", analysis: "아직 올라온 자료가 없어요." }[resFilter] || "자료가 없어요."}</div>`;
   }
 
   $("#resFilters").addEventListener("click", (e) => {
@@ -785,9 +785,9 @@
 
   $("#resShareBtn").addEventListener("click", () => {
     const body = openModal(`
-      <h3>자료 공유하기</h3><div class="meta">영상 · 논문 · 분석</div>
+      <h3>자료 공유하기</h3><div class="meta">영상 · 논문 · 기타</div>
       <form class="form" id="resForm">
-        <label>종류<select name="type"><option value="video">영상 (유튜브)</option><option value="paper">논문</option><option value="analysis">분석</option></select></label>
+        <label>종류<select name="type"><option value="video">영상 (유튜브)</option><option value="paper">논문</option><option value="analysis">기타</option></select></label>
         <div class="form-row">
           <label>작성자 이름<input name="author" required maxlength="20" value="${esc(localStorage.getItem("kl_name") || "")}" placeholder="예) 유수영" /></label>
           <label>소속<input name="org" maxlength="30" value="${esc(localStorage.getItem("kl_org") || "")}" placeholder="예) KEEPER LAB" /></label>
