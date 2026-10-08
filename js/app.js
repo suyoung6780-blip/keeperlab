@@ -762,8 +762,8 @@
         <div class="res-thumb" ${thumb}>${pic ? "" : `<span class="res-glyph">${glyph}</span>`}${r.type === "video" ? `<span class="res-play"></span>` : ""}</div>
         <div class="res-body">
           <div class="res-meta"><span class="type">${TYPE_NAME[r.type]}</span><span>${esc(byline(r))}</span><span>${fmtDate(r.createdAt)}</span></div>
-          <h3 class="res-title">${esc(r.title)}</h3>
-          <p class="res-desc">${esc(r.desc)}</p>
+          <h3 class="res-title">${esc(resTitle(r))}</h3>
+          <p class="res-desc">${esc(r.desc || r.lead || "")}</p>
         </div>
       </button>`;
     }).join("") : `<div class="empty">${{ video: "아직 올라온 영상이 없어요.", paper: "아직 올라온 논문이 없어요.", analysis: "아직 올라온 자료가 없어요." }[resFilter] || "자료가 없어요."}</div>`;
@@ -783,10 +783,10 @@
       : yt
       ? `<div class="video-wrap"><iframe src="https://www.youtube-nocookie.com/embed/${yt}?autoplay=1" title="${esc(r.title)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`
       : "";
-    const body = r.body || (r.desc ? `<p style="white-space:pre-wrap">${esc(r.desc)}</p>` : "");
+    const body = r.body || buildBody(r);
     const link = r.url && !yt ? `<p><a class="btn btn-ghost btn-sm" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${typeOf(r) === "paper" ? "논문 원문 보기 ↗" : "원본 링크 열기 ↗"}</a></p>` : "";
     const del = r.mine ? `<div class="form-actions"><button class="btn btn-ghost btn-sm" data-del-res="${r.id}">삭제</button></div>` : "";
-    openModal(`${media}<h3>${esc(r.title)}</h3><div class="meta">${TYPE_NAME[r.type]} · ${esc(byline(r))} · ${fmtDate(r.createdAt)}</div><div class="article">${body}</div>${link}${del}`, { wide: !!yt });
+    openModal(`${media}<h3>${esc(resTitle(r))}</h3><div class="meta">${TYPE_NAME[r.type]} · ${esc(byline(r))} · ${fmtDate(r.createdAt)}</div><div class="article">${body}</div>${link}${del}`, { wide: !!yt });
   });
 
   $("#modalBody").addEventListener("click", async (e) => {
@@ -794,26 +794,133 @@
     if (d) { await resStore.remove(d.dataset.delRes); closeModal(); renderResources(); toast("삭제했어요"); }
   });
 
+  /* ---------- 올린 글을 KEEPER LAB 서식으로 보여주기 ---------- */
+  // 영상: [주제] 제목 · 논문/기타: 제목 그대로
+  const resTitle = (r) => (r.topic && r.type === "video" ? `[${r.topic}] ${r.title}` : r.title);
+  // 빈 줄로 문단을 나누고, 줄바꿈은 그대로
+  const paras = (t = "") => t.trim() ? t.trim().split(/\n\s*\n/).map((x) => `<p>${esc(x).replace(/\n/g, "<br>")}</p>`).join("") : "";
+  function buildBody(r) {
+    let h = "";
+    if (r.lead) h += `<p class="lead">${esc(r.lead)}</p>`;
+    if (r.srcTitle || r.srcInfo) h += `<div class="paper-src">${r.srcTitle ? `<b>${esc(r.srcTitle)}</b>` : ""}${r.srcInfo ? `<span>${esc(r.srcInfo)}</span>` : ""}</div>`;
+    if (r.channel) h += `<p class="res-src">출처 · ${esc(r.channel)}</p>`;
+    h += paras(r.intro || (r.sections ? "" : r.desc));
+    (r.sections || []).forEach((sec, i) => {
+      if (!sec.h && !sec.p && !sec.pull) return;
+      if (sec.h) h += `<h4>${String(i + 1).padStart(2, "0")}. ${esc(sec.h)}</h4>`;
+      h += paras(sec.p);
+      if (sec.pull) h += `<p class="pull">${esc(sec.pull).replace(/\n/g, "<br>")}</p>`;
+    });
+    if (r.thought) h += `<div class="thought"><h4>MY THOUGHT</h4>${paras(r.thought)}</div>`;
+    return h;
+  }
+
+  /* ---------- 자료 공유하기: 종류마다 칸이 달라요 ---------- */
+  const sectionRow = (n) => `
+    <fieldset class="sec-row">
+      <legend>대주제 ${n}</legend>
+      <label>대주제<input name="sh" maxlength="80" placeholder="예) 좋은 골키퍼를 판단하는 기준은 하나가 아니다" /></label>
+      <label>설명<textarea name="sp" maxlength="3000" placeholder="빈 줄을 넣으면 문단이 나뉘어요"></textarea></label>
+      <label>강조 문장 (선택)<input name="spull" maxlength="200" placeholder="굵게 강조해서 보여줄 한 문장" /></label>
+      <button type="button" class="btn btn-ghost btn-sm" data-sec-del>이 대주제 빼기</button>
+    </fieldset>`;
+  async function photoData(file) { // 사진을 1200px로 줄여서 저장
+    if (!file || !file.size) return "";
+    const img = await createImageBitmap(file);
+    const k = Math.min(1, 1200 / img.width);
+    const c = Object.assign(document.createElement("canvas"), { width: Math.round(img.width * k), height: Math.round(img.height * k) });
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", 0.8);
+  }
+
   $("#resShareBtn").addEventListener("click", () => {
     const body = openModal(`
-      <h3>자료 공유하기</h3><div class="meta">영상 · 논문 · 기타</div>
+      <h3>자료 공유하기</h3><div class="meta">KEEPER LAB 아카이브 서식으로 올라가요</div>
       <form class="form" id="resForm">
         <label>종류<select name="type"><option value="video">영상 (유튜브)</option><option value="paper">논문</option><option value="analysis">기타</option></select></label>
         <div class="form-row">
-          <label>작성자 이름<input name="author" required maxlength="20" value="${esc(localStorage.getItem("kl_name") || "")}" placeholder="예) 유수영" /></label>
+          <label>올리는 사람 이름<input name="author" required maxlength="20" value="${esc(localStorage.getItem("kl_name") || "")}" placeholder="예) 유수영" /></label>
           <label>소속<input name="org" maxlength="30" value="${esc(localStorage.getItem("kl_org") || "")}" placeholder="예) KEEPER LAB" /></label>
         </div>
-        <label>제목<input name="title" required maxlength="80" placeholder="예) 하이볼 캐칭 포인트 정리" /></label>
-        <label>링크 (유튜브는 바로 재생 · 논문은 PDF나 원문 주소)<input name="url" type="url" placeholder="https://youtu.be/..." /></label>
-        <label>설명 / 내용<textarea name="desc" maxlength="3000" placeholder="어떤 자료인지, 핵심 포인트를 적어주세요"></textarea></label>
+
+        <div data-for="video">
+          <div class="form-row">
+            <label>주제<input name="v_topic" maxlength="30" placeholder="예) 골키퍼 빌드업" /></label>
+            <label>영상 출처 (채널 이름)<input name="v_channel" maxlength="50" placeholder="예) GEDFOOTBALL" /></label>
+          </div>
+          <label>영상 제목<input name="v_title" maxlength="100" placeholder="예) Build up direction" /></label>
+          <label>유튜브 링크<input name="v_url" type="url" placeholder="https://youtu.be/..." /></label>
+          <label>설명<textarea name="v_desc" maxlength="3000" placeholder="예) 골키퍼 빌드업 — 빌드업 방향 설정."></textarea></label>
+          <p class="form-hint">카드에는 <b>[주제] 영상 제목</b>으로 보이고, 누르면 사이트 안에서 바로 재생돼요.</p>
+        </div>
+
+        <div data-for="paper" hidden>
+          <label>주제 (카드 제목)<input name="p_title" maxlength="80" placeholder="예) 유소년 골키퍼 선발과 발달" /></label>
+          <label>한 줄 질문 · 부제<input name="p_lead" maxlength="150" placeholder="예) 전문가들은 어린 골키퍼의 무엇을 보고, 어떻게 성장시킬까?" /></label>
+          <fieldset class="sec-row src-row">
+            <legend>논문 출처</legend>
+            <label>논문 제목 (원문)<input name="p_src" maxlength="250" placeholder="예) Criteria for the Selection and Development of Academy Soccer Goalkeepers: Experts’ Opinion" /></label>
+            <div class="form-row">
+              <label>연도 · 학술지<input name="p_info" maxlength="150" placeholder="예) 2025 · International Journal of Sports Science & Coaching" /></label>
+              <label>원문 링크 (선택)<input name="p_url" type="url" placeholder="https://..." /></label>
+            </div>
+          </fieldset>
+          <label>연구 소개<textarea name="p_intro" maxlength="3000" placeholder="어떤 연구인지 짧게 소개해 주세요"></textarea></label>
+        </div>
+
+        <div data-for="analysis" hidden>
+          <label>제목<input name="a_title" maxlength="80" placeholder="예) 하이볼 캐칭 포인트 정리" /></label>
+          <label>링크 (선택)<input name="a_url" type="url" placeholder="https://..." /></label>
+          <label>소개<textarea name="a_intro" maxlength="3000" placeholder="어떤 자료인지 짧게 소개해 주세요"></textarea></label>
+        </div>
+
+        <div data-for="paper analysis" hidden>
+          <div class="sec-list"></div>
+          <button type="button" class="btn btn-ghost btn-sm" data-sec-add>+ 대주제 추가</button>
+          <label>MY THOUGHT · 내 생각 (선택)<textarea name="thought" maxlength="3000" placeholder="이 자료를 보고 느낀 점, 현장에 적용할 점"></textarea></label>
+          <label>카드에 보일 한 줄 소개 (선택)<input name="summary" maxlength="120" placeholder="비워두면 한 줄 질문이 보여요" /></label>
+          <label>대표 사진 (선택)<input name="photo" type="file" accept="image/*" /></label>
+        </div>
+
         <div class="form-actions"><button type="button" class="btn btn-ghost btn-sm" data-close>취소</button><button class="btn btn-solid btn-sm">공유하기</button></div>
-      </form>`);
-    $("#resForm", body).addEventListener("submit", async (e) => {
+      </form>`, { wide: true });
+    const form = $("#resForm", body), list = $(".sec-list", form);
+    const renumber = () => $$(".sec-list legend", form).forEach((l, i) => { l.textContent = `대주제 ${i + 1}`; });
+    const addSec = () => { list.insertAdjacentHTML("beforeend", sectionRow(list.children.length + 1)); };
+    addSec(); addSec();
+    const sync = () => {
+      const t = form.type.value;
+      $$("[data-for]", form).forEach((g) => { g.hidden = !g.dataset.for.split(" ").includes(t); });
+    };
+    form.type.addEventListener("change", sync); sync();
+    form.addEventListener("click", (e) => {
+      if (e.target.closest("[data-sec-add]")) { addSec(); return; }
+      const d = e.target.closest("[data-sec-del]");
+      if (d) { d.closest(".sec-row").remove(); renumber(); }
+    });
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const f = Object.fromEntries(new FormData(e.target));
-      if (f.type === "video" && !f.url) return toast("영상은 링크가 필요해요");
-      try { localStorage.setItem("kl_name", f.author.trim()); localStorage.setItem("kl_org", f.org.trim()); } catch {}
-      await resStore.add({ type: f.type, title: f.title.trim(), author: f.author.trim(), org: f.org.trim(), url: f.url.trim(), desc: f.desc.trim() });
+      const v = (n) => (form[n] ? form[n].value.trim() : "");
+      const type = form.type.value;
+      const item = { type, author: v("author"), org: v("org") };
+      if (type === "video") {
+        if (!v("v_title")) return toast("영상 제목을 적어주세요");
+        if (!ytId(v("v_url"))) return toast("유튜브 링크를 확인해 주세요");
+        Object.assign(item, { topic: v("v_topic"), title: v("v_title"), channel: v("v_channel"), url: v("v_url"), desc: v("v_desc") });
+      } else {
+        const title = type === "paper" ? v("p_title") : v("a_title");
+        if (!title) return toast(type === "paper" ? "주제를 적어주세요" : "제목을 적어주세요");
+        const sections = $$(".sec-list .sec-row", form).map((row) => ({
+          h: $("[name=sh]", row).value.trim(), p: $("[name=sp]", row).value.trim(), pull: $("[name=spull]", row).value.trim(),
+        })).filter((x) => x.h || x.p || x.pull);
+        let img = "";
+        try { img = await photoData(form.photo.files[0]); } catch { return toast("사진을 읽지 못했어요. 다른 사진으로 해주세요"); }
+        Object.assign(item, { title, sections, thought: v("thought"), desc: v("summary"), img });
+        if (type === "paper") Object.assign(item, { lead: v("p_lead"), srcTitle: v("p_src"), srcInfo: v("p_info"), url: v("p_url"), intro: v("p_intro") });
+        else Object.assign(item, { url: v("a_url"), intro: v("a_intro") });
+      }
+      try { localStorage.setItem("kl_name", item.author); localStorage.setItem("kl_org", item.org); } catch {}
+      try { await resStore.add(item); } catch { return toast("저장 공간이 부족해요. 사진을 빼고 다시 해주세요"); }
       closeModal();
       resFilter = "all"; setChips($("#resFilters"), $("#resFilters .chip"));
       renderResources();

@@ -1048,3 +1048,14 @@ body.pad-full .float-social, body.pad-full .to-top { display: none; }
   .fb-card dl { grid-template-columns: 1fr; gap: 2px; }
   .fb-card dd { margin-bottom: 8px; }
 }
+
+/* ---------- archive share form (서식) ---------- */
+#resForm [data-for] { display: grid; gap: 16px; }
+#resForm [data-for][hidden] { display: none; }
+.sec-list { display: grid; gap: 14px; }
+.sec-row { margin: 0; padding: 16px; border: 1px solid var(--line-2); border-radius: 8px; display: grid; gap: 12px; min-width: 0; }
+.sec-row legend { padding: 0 6px; font: 600 12px var(--mono); letter-spacing: .08em; color: var(--mute-2); }
+.sec-row [data-sec-del] { justify-self: start; }
+.form-hint { margin: 0; color: var(--mute); font-size: 13px; }
+.form-hint b { color: var(--mute-2); }
+.modal .article .res-src { font: 12px var(--mono); color: var(--mute); letter-spacing: .04em; }
