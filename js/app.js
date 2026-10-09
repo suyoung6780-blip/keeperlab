@@ -435,9 +435,9 @@
   ];
   // 사진은 assets/coaches/ 폴더에 넣고 photo에 파일 이름을 적어주세요 (없으면 이니셜이 보여요)
   const COACHES = [
-    { id: "yoo", name: "유수영", role: "KEEPER LAB 대표 · GK 코치", photo: "assets/coaches/yoo.jpg" },
-    { id: "seo", name: "서동현", role: "GK 코치", photo: "assets/coaches/seo.jpg" },
-    { id: "bang", name: "방하승", role: "GK 코치", photo: "assets/coaches/bang.jpg" },
+    { id: "yoo", name: "유수영", role: "KEEPER LAB 대표 · GK 코치", photo: "assets/coaches/yoo.jpg", areas: ["서울 중부"] },
+    { id: "seo", name: "서동현", role: "GK 코치", photo: "assets/coaches/seo.jpg", areas: ["서울 동부", "경기 서부", "경기 동북부"] },
+    { id: "bang", name: "방하승", role: "GK 코치", photo: "assets/coaches/bang.jpg", areas: ["서울 동남", "경기 서부", "경기 남부"] },
   ];
   const ALL_AREAS = REGIONS.flatMap((r) => r.areas);
   window.KL_REGIONS = REGIONS; // 트레이닝 피드백(선수 지역)에서도 같은 지역 목록을 써요
@@ -464,6 +464,7 @@
               <div class="coach-body">
                 <h4>${c.name}<small>코치</small></h4>
                 <p>${c.role}</p>
+                ${c.areas && c.areas.length ? `<ul class="coach-areas" aria-label="담당 지역">${c.areas.map((a) => `<li>${a}</li>`).join("")}</ul>` : ""}
               </div>
             </article>`).join("")}
         </div>
@@ -524,15 +525,9 @@
             <option value="">지역을 선택해 주세요</option>
             ${REGIONS.map((r) => `<optgroup label="${r.group}">${r.areas.map((a) => `<option>${a}</option>`).join("")}</optgroup>`).join("")}
           </select></label>
-          <label>희망 코치<select name="coach">
-            <option value="">상관없음</option>
-            ${COACHES.map((c) => `<option>${c.name}</option>`).join("")}
-          </select></label>
-        </div>
-        <div class="form-row">
           <label>상세 위치 (선택)<input name="spot" maxlength="40" placeholder="예) 송파구, 잠실역 근처" /></label>
-          <label>희망 요일 · 시간대<input name="when" maxlength="60" placeholder="예) 평일 저녁, 토요일 오전" /></label>
         </div>
+        <label>희망 요일 · 시간대<input name="when" maxlength="60" placeholder="예) 평일 저녁, 토요일 오전" /></label>
         <label>요청 사항 (선택)<textarea name="note" maxlength="1000" placeholder="포지션 경력, 고치고 싶은 부분 등을 적어주세요"></textarea></label>
         <label class="check"><input type="checkbox" name="agree" required /> <span>레슨 상담을 위한 개인정보(이름·연락처) 수집 및 이용에 동의합니다.</span></label>
         <div class="form-actions"><button type="button" class="btn btn-ghost btn-sm" data-close>취소</button><button class="btn btn-solid btn-sm">신청서 보내기</button></div>
@@ -548,7 +543,7 @@
       const plan = LESSONS.find((l) => l.id === f.plan);
       const req = {
         name: f.name.trim(), phone: f.phone.trim(), plan: plan ? plan.name : "상담 먼저", price: 0,
-        level: f.level, area: [f.area, f.spot.trim()].filter(Boolean).join(" · "), coach: f.coach || "상관없음",
+        level: f.level, area: [f.area, f.spot.trim()].filter(Boolean).join(" · "), 
         when: f.when.trim(), note: f.note.trim(), status: "new",
       };
       await lessonReqs.add(req);
@@ -565,7 +560,6 @@
       `신청: ${r.plan}`,
       `선수 구분: ${r.level}`,
       r.area && `희망 지역: ${r.area}`,
-      `희망 코치: ${r.coach || "상관없음"}`,
       r.when && `희망 요일·시간: ${r.when}`,
       r.note && `요청 사항: ${r.note}`,
     ].filter(Boolean).join("\n");

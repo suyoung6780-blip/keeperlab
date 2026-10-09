@@ -996,7 +996,7 @@ body.pad-full .float-social, body.pad-full .to-top { display: none; }
 @media (max-width: 820px) {
   input, select, textarea { font-size: 16px; }
 }
-@media (max-width: 600px) { body[data-page="tactics"] .float-social, body[data-page="tactics"] .to-top { display: none; } .pi span { font-size: 10.5px; } }
+@media (max-width: 600px) { body[data-page="tactics"] .float-social, body[data-page="tactics"] .to-top, body[data-page="training"] .float-social { display: none; } .pi span { font-size: 10.5px; } }
 
 /* 샵 출시 예정 */
 .soon-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; border: 1px solid #ffd23f; color: #ffd23f; font: 700 13px var(--sans); letter-spacing: 0; }
@@ -1042,9 +1042,26 @@ body.pad-full .float-social, body.pad-full .to-top { display: none; }
 .fb-card .fb-check, .fb-card .fb-acts { margin-top: 14px; }
 .fb-note { margin: 16px 0 0; color: var(--mute); font-size: 13px; }
 .fb-danger { margin-right: auto; color: #ff8a8a; border-color: #5a2a2a; }
+.fb-search { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; }
+.fb-search input { flex: 1 1 200px; min-width: 0; min-height: 38px; padding: 0 12px; background: var(--ink-2); border: 1px solid var(--line-2); border-radius: var(--radius); color: var(--pure); font: 15px var(--sans); }
+.fb-search input::placeholder { color: var(--mute); font-size: 14px; }
+.fb-pages { display: flex; justify-content: center; gap: 6px; margin-top: 18px; flex-wrap: wrap; }
+.fb-pg { min-width: 38px; height: 38px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; color: var(--mute-2); font: 600 14px var(--sans); cursor: pointer; }
+.fb-pg:hover:not(:disabled) { border-color: var(--pure); color: var(--pure); }
+.fb-pg.is-on { background: var(--pure); color: var(--black); border-color: var(--pure); }
+.fb-pg:disabled { opacity: .35; cursor: default; }
+.fb-pin button, .fb-acts .btn { white-space: nowrap; }
+.coach-areas { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+.coach-areas li { padding: 2px 8px; border: 1px solid var(--line-2); border-radius: 999px; font-size: 11px; color: var(--mute-2); white-space: nowrap; }
 @media (max-width: 600px) {
+  .fb-section { padding: 20px 16px; }
   .fb-row { align-items: stretch; flex-direction: column; }
-  .fb-pin input { flex: 1; width: auto; }
+  .fb-pin { width: 100%; }
+  .fb-pin input { flex: 1; width: auto; min-width: 0; }
+  .fb-pin button { flex: none; padding: 0 14px; }
+  .fb-acts { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .fb-acts .btn { padding: 0 8px; font-size: 13px; }
+  .fb-card { padding: 16px; }
   .fb-card dl { grid-template-columns: 1fr; gap: 2px; }
   .fb-card dd { margin-bottom: 8px; }
 }

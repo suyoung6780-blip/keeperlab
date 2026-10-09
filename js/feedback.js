@@ -48,6 +48,16 @@
 
   let players = [];
   let regionFilter = "all";
+  let search = "", page = 1;
+  const PER_PAGE = 5;
+  // 이름 검색: 밖에서는 가려진 이름(유*영)끼리 비교해요. 관리자는 실제 이름·소속으로도 찾아요
+  const matches = (p, admin) => {
+    const q = search.replace(/\s/g, "");
+    if (!q) return true;
+    if (admin && ((p.name || "").includes(q) || (p.org || "").includes(q))) return true;
+    if (q.length === 1) return p.masked.startsWith(q);
+    return p.masked === mask(q);
+  };
   const regions = () => window.KL_REGIONS || [];
   const regionSelect = (cur = "") => `<select name="region" required>
       <option value="">지역 선택</option>
@@ -78,7 +88,10 @@
     const admin = isAdmin();
     const used = regions().flatMap((r) => r.areas).filter((a) => players.some((p) => p.region === a));
     if (regionFilter !== "all" && !used.includes(regionFilter)) regionFilter = "all";
-    const shown = players.filter((p) => regionFilter === "all" || p.region === regionFilter);
+    const found = players.filter((p) => (regionFilter === "all" || p.region === regionFilter) && matches(p, admin));
+    const pages = Math.max(1, Math.ceil(found.length / PER_PAGE));
+    if (page > pages) page = pages;
+    const shown = found.slice((page - 1) * PER_PAGE, page * PER_PAGE);
     root.innerHTML = `
       <div class="fb-bar">
         ${admin
@@ -88,6 +101,11 @@
       ${used.length ? `<div class="chips fb-chips" role="tablist" aria-label="지역">
         ${["all", ...used].map((a) => `<button class="chip ${a === regionFilter ? "is-active" : ""}" data-region="${esc(a)}" role="tab" aria-selected="${a === regionFilter}">${a === "all" ? "전체 지역" : esc(a)}</button>`).join("")}
       </div>` : ""}
+      <form class="fb-search" role="search">
+        <input name="q" type="search" value="${esc(search)}" placeholder="${admin ? "이름 · 소속 검색" : "내 이름 검색 (예: 유수영)"}" aria-label="이름 검색" autocomplete="off" />
+        <button class="btn btn-ghost btn-sm">검색</button>
+        ${search ? `<button type="button" class="btn btn-ghost btn-sm" data-fb="clear">전체 보기</button>` : ""}
+      </form>
       ${shown.length ? `<ul class="fb-list">${shown.map((p) => `
         <li class="fb-row">
           <div class="fb-who">
@@ -106,12 +124,19 @@
                  <button class="btn btn-ghost btn-sm">내 피드백 보기</button>
                </form>`}
         </li>`).join("")}</ul>`
-        : `<div class="fb-empty">${admin ? "아직 등록된 선수가 없어요. ‘+ 선수 등록’을 눌러 추가해 주세요." : "아직 등록된 선수가 없어요."}</div>`}
+        : `<div class="fb-empty">${search ? "찾는 이름이 없어요. 이름을 정확히 입력했는지 확인해 주세요." : admin ? "아직 등록된 선수가 없어요. ‘+ 선수 등록’을 눌러 추가해 주세요." : "아직 등록된 선수가 없어요."}</div>`}
+      ${pages > 1 ? `<nav class="fb-pages" aria-label="페이지">
+        <button class="fb-pg" data-pg="${page - 1}" ${page === 1 ? "disabled" : ""} aria-label="이전 페이지">‹</button>
+        ${Array.from({ length: pages }, (_, i) => i + 1).map((n) => `<button class="fb-pg${n === page ? " is-on" : ""}" data-pg="${n}" ${n === page ? 'aria-current="page"' : ""}>${n}</button>`).join("")}
+        <button class="fb-pg" data-pg="${page + 1}" ${page === pages ? "disabled" : ""} aria-label="다음 페이지">›</button>
+      </nav>` : ""}
       <p class="fb-help">내 이름이 안 보이거나 비밀번호를 잊었다면 담당 코치에게 알려주세요.</p>`;
   }
 
   /* ---------- 선수: 비밀번호 → 내 피드백 ---------- */
   root.addEventListener("submit", async (e) => {
+    const s = e.target.closest(".fb-search");
+    if (s) { e.preventDefault(); search = s.q.value.trim(); page = 1; render(true); const i = $(".fb-search input", root); if (i) i.focus(); return; }
     const f = e.target.closest(".fb-pin"); if (!f) return;
     e.preventDefault();
     const pin = f.pin.value.trim();
@@ -309,7 +334,10 @@
 
   root.addEventListener("click", async (e) => {
     const c = e.target.closest("[data-region]");
-    if (c) { regionFilter = c.dataset.region; return render(true); }
+    if (c) { regionFilter = c.dataset.region; page = 1; return render(true); }
+    const pg = e.target.closest("[data-pg]");
+    if (pg && !pg.disabled) { page = +pg.dataset.pg; render(true); root.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+    if (e.target.closest('[data-fb="clear"]')) { search = ""; page = 1; return render(true); }
     const b = e.target.closest("[data-fb]"); if (!b) return;
     const act = b.dataset.fb;
     const p = players.find((x) => x.id === b.dataset.pid);
