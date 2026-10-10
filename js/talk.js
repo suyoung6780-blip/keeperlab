@@ -115,12 +115,37 @@
   });
 
   /* ---------- 글쓰기 · 수정 ---------- */
-  const regionOptions = (cur = "") => {
-    const regs = window.KL_REGIONS || [];
-    return `<option value="">선택 안 함</option>
-      ${regs.map((r) => `<optgroup label="${esc(r.group)}">${r.areas.map((a) => `<option ${a === cur ? "selected" : ""}>${esc(a)}</option>`).join("")}</optgroup>`).join("")}
-      <optgroup label="그 밖에">${["서울 기타", "경기 기타", "인천", "강원", "충청", "전라", "경상", "제주", "해외", "온라인"].map((a) => `<option ${a === cur ? "selected" : ""}>${a}</option>`).join("")}</optgroup>`;
+  // 지역은 크게 (서울 · 경기 …)
+  const REGIONS_BIG = ["서울", "경기", "인천", "강원", "충청", "전라", "경상", "제주", "전국", "해외", "온라인"];
+  const regionOptions = (cur = "") => `<option value="">선택 안 함</option>
+      ${REGIONS_BIG.map((a) => `<option ${a === cur ? "selected" : ""}>${a}</option>`).join("")}
+      ${cur && !REGIONS_BIG.includes(cur) ? `<option selected>${esc(cur)}</option>` : ""}`;
+
+  // 말머리마다 쓰는 법 (제목 예시 · 안내 · 내용 양식)
+  const GUIDE = {
+    "GK코치 공고": {
+      title: "예) OO FC U12 골키퍼 코치 구합니다",
+      tip: "팀에서 GK 코치를 구할 때 써요. 아래 항목을 채워주세요.",
+      body: "■ 지역 : \n■ 팀 이름 : \n■ 대상 · 연령 : \n■ 요일 · 시간 : \n■ 급여 : \n■ 자격 요건 : \n■ 우대 사항 : \n■ 지원 방법 : \n\n■ 추가 내용 : ",
+    },
+    "GK코치 자리 찾기": {
+      title: "예) 경기 지역 팀 구해요 (주말 가능)",
+      tip: "GK 코치가 일할 팀을 찾을 때 써요. 프로필을 함께 적어주세요.",
+      body: "■ 희망 지역 : \n■ 가능 요일 · 시간 : \n■ 희망 급여 : \n■ 지도 가능 연령 : \n■ 경력 : \n■ 자격증 : \n\n■ 자기소개 : ",
+    },
+    "GK선수 모집 및 팀 모집": {
+      title: "예) [선수 모집] OO FC U15 골키퍼 모집 / [팀 찾기] 서울 지역 GK 선수 프로필",
+      tip: "팀이 GK 선수를 모집하거나, GK 선수가 뛸 팀을 찾을 때 써요.",
+      body: "■ 구분 : 선수 모집 / 팀 찾기\n■ 지역 : \n■ 팀 이름 (팀이 쓸 때) : \n\n[선수 프로필]\n■ 나이 · 학년 : \n■ 키 · 주발 : \n■ 경력 · 소속 : \n■ 가능한 훈련 요일 · 시간 : \n\n■ 하고 싶은 말 : ",
+    },
+    "GK코치들의 이야기": {
+      title: "예) 겨울철 GK 훈련, 어떻게 하세요?",
+      tip: "훈련 방법, 장비, 경기 이야기 등 골키퍼와 관련된 무엇이든 자유롭게 나눠요.",
+      body: "",
+    },
   };
+  const isTemplate = (t) => !t.trim() || Object.values(GUIDE).some((g) => g.body && t.trim() === g.body.trim());
+
   function writeForm(post) {
     const v = (k) => esc(post ? post[k] || "" : "");
     const body = openModal(`
@@ -128,10 +153,11 @@
       <form class="form" id="talkForm">
         <div class="form-row">
           <label>말머리<select name="cat" required>${CATS.map((c) => `<option ${post && post.cat === c ? "selected" : ""}>${c}</option>`).join("")}</select></label>
-          <label>지역 (선택)<select name="region">${regionOptions(post ? post.region : "")}</select></label>
+          <label>지역<select name="region">${regionOptions(post ? post.region : "")}</select></label>
         </div>
-        <label>제목<input name="title" required maxlength="80" value="${v("title")}" placeholder="예) 주말 유소년 GK 코치 구합니다 (경기 남부)" /></label>
-        <label>내용<textarea name="body" required maxlength="5000" rows="9" placeholder="공고라면 팀 · 연령 · 요일/시간 · 조건을, 자리를 찾는다면 경력과 가능한 지역을 적어주세요">${v("body")}</textarea></label>
+        <p class="form-hint talk-tip"></p>
+        <label>제목<input name="title" required maxlength="80" value="${v("title")}" /></label>
+        <label>내용<textarea name="body" required maxlength="5000" rows="12">${v("body")}</textarea></label>
         <label>연락 방법 (선택 · 모두에게 공개돼요)<input name="contact" maxlength="80" value="${v("contact")}" placeholder="예) 카카오 오픈채팅 링크, 이메일" /></label>
         ${post ? "" : `<div class="form-row">
           <label>이름<input name="author" required maxlength="20" value="${esc(localStorage.getItem("kl_name") || "")}" placeholder="예) 유수영" /></label>
@@ -141,11 +167,24 @@
         <div class="form-actions"><button type="button" class="btn btn-ghost btn-sm" data-close>취소</button><button class="btn btn-solid btn-sm">${post ? "수정하기" : "올리기"}</button></div>
       </form>`, true);
     const f = $("#talkForm", body);
+    // 말머리를 바꾸면 제목 예시 · 안내 · 내용 양식이 바뀌어요 (이미 쓴 내용은 그대로 둬요)
+    const applyGuide = () => {
+      const g = GUIDE[f.cat.value] || GUIDE["GK코치들의 이야기"];
+      f.title.placeholder = g.title;
+      $(".talk-tip", f).textContent = g.tip;
+      f.body.placeholder = g.body ? "" : "자유롭게 적어주세요";
+      if (isTemplate(f.body.value)) f.body.value = g.body;
+    };
+    f.cat.addEventListener("change", applyGuide);
+    applyGuide();
     f.addEventListener("submit", async (e) => {
       e.preventDefault();
       const val = (n) => (f[n] ? f[n].value.trim() : "");
-      const data = { cat: val("cat"), title: val("title"), body: val("body"), contact: val("contact"), region: val("region") };
-      if (!data.title || !data.body) return toast("제목과 내용을 적어주세요");
+      if (!val("title") || isTemplate(val("body"))) return toast("제목과 내용을 적어주세요");
+      // 양식에서 비워둔 줄(■ 항목 : )은 빼고 올려요
+      const cleanBody = val("body").split("\n").filter((l) => !/^■[^:]*:\s*$/.test(l.trim())).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+      const data = { cat: val("cat"), title: val("title"), body: cleanBody, contact: val("contact"), region: val("region") };
+      if (!data.body) return toast("내용을 적어주세요");
       const btn = $(".btn-solid", f); btn.disabled = true;
       try {
         await boot();
