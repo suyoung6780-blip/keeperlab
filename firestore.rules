@@ -62,7 +62,7 @@ service cloud.firestore {
       return d.keys().hasOnly(['h']) && d.h is string && d.h.size() == 64;
     }
     function validPost(d) {
-      return d.cat in ['GK코치 공고', '코치 자리 찾기', 'GK선수 모집', '이적 · 채용', '자유 이야기']
+      return d.cat in ['GK코치 공고', 'GK코치 자리 찾기', 'GK선수 모집', '자유 이야기']
         && d.title is string && d.title.size() > 0 && d.title.size() <= 80
         && d.body is string && d.body.size() > 0 && d.body.size() <= 5000
         && d.author is string && d.author.size() > 0 && d.author.size() <= 20
