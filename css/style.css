@@ -1087,7 +1087,8 @@ body.pad-full .float-social, body.pad-full .to-top { display: none; }
 /* ---------- FOR COACH (메뉴 · 허브 · 탭) ---------- */
 .nav-drop { position: relative; display: flex; }
 .nav-sub { position: absolute; top: 100%; left: 50%; transform: translate(-50%, 6px); min-width: 230px; padding: 8px; background: var(--ink); border: 1px solid var(--line-2); border-radius: 8px; box-shadow: 0 18px 40px rgba(0,0,0,.5); opacity: 0; visibility: hidden; transition: opacity .18s, transform .18s; z-index: 60; }
-.nav-drop:hover .nav-sub, .nav-drop:focus-within .nav-sub { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.nav-drop:hover .nav-sub, .nav-drop:has(a:focus-visible) .nav-sub { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.nav-drop.is-shut .nav-sub { opacity: 0 !important; visibility: hidden !important; } /* 누르면 바로 닫혀요 */
 .nav-links .nav-sub a { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; height: auto; padding: 10px 12px; border-radius: 6px; letter-spacing: .04em; }
 .nav-links .nav-sub a::after { display: none; }
 .nav-sub a b { font-size: 13px; color: var(--pure); }

@@ -108,6 +108,15 @@
   const PAGES = ["home", "about", "shop", "training", "coach", "archive", "tactics", "talk"];
   const TITLES = { home: "", about: "소개", shop: "샵", training: "트레이닝", coach: "FOR COACH", archive: "아카이브", tactics: "택티컬 패드", talk: "GK 코치 대화방" };
   const COACH_PAGES = ["coach", "archive", "tactics", "talk"]; // 메뉴에서 FOR COACH 아래에 묶여요
+  // FOR COACH 펼침 메뉴: 무언가 누르면 닫고, 마우스가 메뉴 밖으로 나가면 다시 열릴 수 있게
+  $$(".nav-drop").forEach((drop) => {
+    drop.addEventListener("click", (e) => {
+      if (!e.target.closest("a")) return;
+      drop.classList.add("is-shut");
+      e.target.closest("a").blur();
+    });
+    drop.addEventListener("mouseleave", () => drop.classList.remove("is-shut"));
+  });
   // FOR COACH 안의 세 페이지 위쪽에 작은 이동 탭
   ["archive", "tactics", "talk"].forEach((id) => {
     const sec = document.getElementById(id); if (!sec) return;
