@@ -74,10 +74,15 @@ service cloud.firestore {
     }
     match /talk/{pid} {
       allow read: if true;
-      allow create: if validPost(request.resource.data)
-        && request.resource.data.keys().hasOnly(['cat', 'title', 'body', 'author', 'org', 'contact', 'region', 'createdAt'])
-        && request.resource.data.createdAt == request.time
-        && existsAfter(/databases/$(db)/documents/talkLock/$(pid));
+      // 관리자는 비밀번호 없이 바로 써요 (byAdmin 표시는 관리자만 붙일 수 있어요)
+      allow create: if (isAdmin()
+          && validPost(request.resource.data)
+          && request.resource.data.keys().hasOnly(['cat', 'title', 'body', 'author', 'org', 'contact', 'region', 'byAdmin', 'createdAt'])
+          && request.resource.data.createdAt == request.time)
+        || (validPost(request.resource.data)
+          && request.resource.data.keys().hasOnly(['cat', 'title', 'body', 'author', 'org', 'contact', 'region', 'createdAt'])
+          && request.resource.data.createdAt == request.time
+          && existsAfter(/databases/$(db)/documents/talkLock/$(pid)));
       allow update: if isAdmin()
         || (lockOk(pid) && validPost(request.resource.data)
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cat', 'title', 'body', 'contact', 'region', 'updatedAt']));
@@ -85,13 +90,17 @@ service cloud.firestore {
 
       match /comments/{cid} {
         allow read: if true;
-        allow create: if request.resource.data.keys().hasOnly(['author', 'org', 'body', 'createdAt'])
+        allow create: if (isAdmin()
+            && request.resource.data.keys().hasOnly(['author', 'org', 'body', 'byAdmin', 'createdAt'])
+            && request.resource.data.body is string && request.resource.data.body.size() > 0 && request.resource.data.body.size() <= 1000
+            && request.resource.data.createdAt == request.time)
+          || (request.resource.data.keys().hasOnly(['author', 'org', 'body', 'createdAt'])
           && request.resource.data.author is string && request.resource.data.author.size() > 0 && request.resource.data.author.size() <= 20
           && (!('org' in request.resource.data) || (request.resource.data.org is string && request.resource.data.org.size() <= 30))
           && request.resource.data.body is string && request.resource.data.body.size() > 0 && request.resource.data.body.size() <= 1000
           && request.resource.data.createdAt == request.time
           && exists(/databases/$(db)/documents/talk/$(pid))
-          && existsAfter(/databases/$(db)/documents/talkLock/$(pid + '__' + cid));
+          && existsAfter(/databases/$(db)/documents/talkLock/$(pid + '__' + cid)));
         allow delete: if isAdmin() || lockOk(pid + '__' + cid);
       }
     }

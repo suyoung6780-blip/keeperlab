@@ -1156,3 +1156,5 @@ body.pad-full .float-social, body.pad-full .to-top { display: none; }
 .kind-opt input:checked + span { border-color: var(--pure); background: var(--ink-3); color: var(--mute-2); }
 .kind-opt input:checked + span b { color: var(--pure); }
 .kind-opt input:focus-visible + span { outline: 2px solid var(--pure); outline-offset: 2px; }
+.talk-official { font-style: normal; display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 4px; background: var(--pure); color: var(--black); font: 800 10px var(--sans); letter-spacing: .06em; vertical-align: 1px; }
+.talk-cform.is-admin .talk-cfields { grid-template-columns: 1fr 1fr auto; }

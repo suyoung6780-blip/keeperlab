@@ -86,7 +86,7 @@
         <li><button class="talk-row" data-post="${p.id}">
           <span class="talk-cat">${esc(p.cat)}</span>
           <span class="talk-title">${esc(p.title)}${p.region ? `<em>${esc(p.region)}</em>` : ""}</span>
-          <span class="talk-meta">${esc(byline(p))} · ${when(p.createdAt)}</span>
+          <span class="talk-meta">${p.byAdmin ? `<i class="talk-official">운영자</i>` : ""}${esc(byline(p))} · ${when(p.createdAt)}</span>
         </button></li>`).join("")}</ul>`
         : `<div class="fb-empty">${search || cat !== "all" ? "조건에 맞는 글이 없어요." : "아직 글이 없어요. 첫 글을 남겨주세요!"}</div>`}
       ${pages > 1 ? `<nav class="fb-pages" aria-label="페이지">
@@ -156,6 +156,7 @@
 
   function writeForm(post) {
     const v = (k) => esc(post ? post[k] || "" : "");
+    const admin = KLFB.isAdmin(); // 관리자는 비밀번호 없이 쓰고 고쳐요
     const body = openModal(`
       <h3>${post ? "글 수정" : "글쓰기"}</h3><div class="meta">GK 코치 대화방</div>
       <form class="form" id="talkForm">
@@ -172,10 +173,12 @@
         <label>내용<textarea name="body" required maxlength="5000" rows="12">${v("body")}</textarea></label>
         <label>연락 방법 (선택 · 모두에게 공개돼요)<input name="contact" maxlength="80" value="${v("contact")}" placeholder="예) 카카오 오픈채팅 링크, 이메일" /></label>
         ${post ? "" : `<div class="form-row">
-          <label>이름<input name="author" required maxlength="20" value="${esc(localStorage.getItem("kl_name") || "")}" placeholder="예) 유수영" /></label>
-          <label>소속 (선택)<input name="org" maxlength="30" value="${esc(localStorage.getItem("kl_org") || "")}" placeholder="예) KEEPER LAB" /></label>
+          <label>이름<input name="author" required maxlength="20" value="${esc(admin ? "KEEPER LAB" : localStorage.getItem("kl_name") || "")}" placeholder="예) 유수영" /></label>
+          <label>소속 (선택)<input name="org" maxlength="30" value="${esc(admin ? "" : localStorage.getItem("kl_org") || "")}" placeholder="예) KEEPER LAB" /></label>
         </div>`}
-        <label>${post ? "글 비밀번호 (쓸 때 정한 비밀번호)" : "글 비밀번호 (수정 · 삭제할 때 필요해요, 4자 이상)"}<input name="pw" type="password" required minlength="4" maxlength="30" autocomplete="new-password" /></label>
+        ${admin
+          ? `<p class="form-hint">관리자 모드라 비밀번호 없이 올라가요. 글에 <b>운영자</b> 표시가 붙어요.</p>`
+          : `<label>${post ? "글 비밀번호 (쓸 때 정한 비밀번호)" : "글 비밀번호 (수정 · 삭제할 때 필요해요, 4자 이상)"}<input name="pw" type="password" required minlength="4" maxlength="30" autocomplete="new-password" /></label>`}
         <div class="form-actions"><button type="button" class="btn btn-ghost btn-sm" data-close>취소</button><button class="btn btn-solid btn-sm">${post ? "수정하기" : "올리기"}</button></div>
       </form>`, true);
     const f = $("#talkForm", body);
@@ -213,14 +216,18 @@
         if (!post) {
           const ref = fb.db.collection("talk").doc();
           const author = val("author"), org = val("org");
-          try { localStorage.setItem("kl_name", author); localStorage.setItem("kl_org", org); } catch {}
-          batch.set(ref, { ...data, author, org, createdAt: fb.FV.serverTimestamp() });
-          batch.set(fb.db.doc(`talkLock/${ref.id}`), { h: await hashPw(ref.id, val("pw")) });
+          if (admin) {
+            batch.set(ref, { ...data, author, org, byAdmin: true, createdAt: fb.FV.serverTimestamp() });
+          } else {
+            try { localStorage.setItem("kl_name", author); localStorage.setItem("kl_org", org); } catch {}
+            batch.set(ref, { ...data, author, org, createdAt: fb.FV.serverTimestamp() });
+            batch.set(fb.db.doc(`talkLock/${ref.id}`), { h: await hashPw(ref.id, val("pw")) });
+          }
           await batch.commit();
           toast("글을 올렸어요");
           await load(); openPost(ref.id); // 창을 닫지 않고 바로 올린 글로 바꿔요
         } else {
-          batch.set(fb.db.doc(`talkUnlock/${post.id}`), { h: await hashPw(post.id, val("pw")), t: fb.FV.serverTimestamp() });
+          if (!admin) batch.set(fb.db.doc(`talkUnlock/${post.id}`), { h: await hashPw(post.id, val("pw")), t: fb.FV.serverTimestamp() });
           batch.update(fb.db.doc(`talk/${post.id}`), { ...data, updatedAt: fb.FV.serverTimestamp() });
           await batch.commit();
           toast("수정했어요");
@@ -252,28 +259,28 @@
       <div class="talk-view">
         <span class="talk-cat">${esc(p.cat)}</span>
         <h3>${esc(p.title)}</h3>
-        <div class="meta">${esc(byline(p))} · ${when(p.createdAt)}${p.updatedAt ? " · 수정됨" : ""}</div>
+        <div class="meta">${p.byAdmin ? `<i class="talk-official">운영자</i>` : ""}${esc(byline(p))} · ${when(p.createdAt)}${p.updatedAt ? " · 수정됨" : ""}</div>
         ${p.region || p.contact ? `<dl class="talk-info">${p.region ? `<dt>지역</dt><dd>${esc(p.region)}</dd>` : ""}${p.contact ? `<dt>연락</dt><dd>${esc(p.contact)}</dd>` : ""}</dl>` : ""}
         <div class="article talk-body">${paras(p.body)}</div>
         <div class="talk-own" data-own>
-          <button class="btn btn-ghost btn-sm" data-own-act="edit">수정</button>
-          <button class="btn btn-ghost btn-sm" data-own-act="del">삭제</button>
-          ${admin ? `<button class="btn btn-ghost btn-sm fb-danger" data-admin-del>관리자 삭제</button>` : ""}
+          ${admin
+            ? `<button class="btn btn-ghost btn-sm" data-admin-edit>수정</button><button class="btn btn-ghost btn-sm fb-danger" data-admin-del>삭제</button>`
+            : p.byAdmin ? "" : `<button class="btn btn-ghost btn-sm" data-own-act="edit">수정</button><button class="btn btn-ghost btn-sm" data-own-act="del">삭제</button>`}
         </div>
         <section class="talk-comments">
           <h4>댓글 ${comments.length}</h4>
           ${comments.length ? `<ul>${comments.map((c) => `
             <li data-cid="${c.id}">
-              <div class="tc-head"><b>${esc(byline(c))}</b><span>${when(c.createdAt)}</span>
+              <div class="tc-head">${c.byAdmin ? `<i class="talk-official">운영자</i>` : ""}<b>${esc(byline(c))}</b><span>${when(c.createdAt)}</span>
                 <button class="tc-del" data-cdel="${c.id}">삭제</button></div>
               <div class="tc-body">${esc(c.body).replace(/\n/g, "<br>")}</div>
             </li>`).join("")}</ul>` : `<p class="fb-help">첫 댓글을 남겨보세요.</p>`}
-          <form class="form talk-cform" id="talkCForm">
+          <form class="form talk-cform${admin ? " is-admin" : ""}" id="talkCForm">
             <textarea name="body" required maxlength="1000" rows="3" placeholder="댓글을 적어주세요"></textarea>
             <div class="talk-cfields">
-              <input name="author" required maxlength="20" value="${esc(localStorage.getItem("kl_name") || "")}" placeholder="이름" aria-label="이름" />
+              <input name="author" required maxlength="20" value="${esc(admin ? "KEEPER LAB" : localStorage.getItem("kl_name") || "")}" placeholder="이름" aria-label="이름" />
               <input name="org" maxlength="30" value="${esc(localStorage.getItem("kl_org") || "")}" placeholder="소속 (선택)" aria-label="소속" />
-              <input name="pw" type="password" required minlength="4" maxlength="30" placeholder="비밀번호 (삭제용)" aria-label="댓글 비밀번호" autocomplete="new-password" />
+              ${admin ? "" : `<input name="pw" type="password" required minlength="4" maxlength="30" placeholder="비밀번호 (삭제용)" aria-label="댓글 비밀번호" autocomplete="new-password" />`}
               <button class="btn btn-solid btn-sm">댓글 달기</button>
             </div>
           </form>
@@ -288,8 +295,12 @@
       try {
         const ref = fb.db.collection(`talk/${id}/comments`).doc();
         const batch = fb.db.batch();
-        batch.set(ref, { author: val("author"), org: val("org"), body: val("body"), createdAt: fb.FV.serverTimestamp() });
-        batch.set(fb.db.doc(`talkLock/${id}__${ref.id}`), { h: await hashPw(`${id}__${ref.id}`, val("pw")) });
+        if (KLFB.isAdmin()) {
+          batch.set(ref, { author: val("author"), org: val("org"), body: val("body"), byAdmin: true, createdAt: fb.FV.serverTimestamp() });
+        } else {
+          batch.set(ref, { author: val("author"), org: val("org"), body: val("body"), createdAt: fb.FV.serverTimestamp() });
+          batch.set(fb.db.doc(`talkLock/${id}__${ref.id}`), { h: await hashPw(`${id}__${ref.id}`, val("pw")) });
+        }
         await batch.commit();
         try { localStorage.setItem("kl_name", val("author")); localStorage.setItem("kl_org", val("org")); } catch {}
         openPost(id);
@@ -339,6 +350,7 @@
         closeModal(); toast("삭제했어요"); load();
       });
     }
+    if (e.target.closest("[data-admin-edit]") && KLFB.isAdmin()) return writeForm(p);
     if (e.target.closest("[data-admin-del]")) {
       const b = e.target.closest("[data-admin-del]");
       if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "한 번 더 누르면 삭제"; return; }
