@@ -53,8 +53,10 @@ service cloud.firestore {
     // GK 코치 대화방: 누구나 글·댓글을 쓸 수 있어요.
     // 수정·삭제는 글 비밀번호로 확인해요 — 비밀번호는 암호화된 값(talkLock)만 저장되고 아무도 읽을 수 없어요.
     // 확인 방법: 같은 묶음 쓰기 안에서 talkUnlock에 넣은 값이 talkLock과 같아야 해요.
+    // talkUnlock은 '이번 요청'에서 쓴 값만 인정해요 (t == request.time) — 예전에 맞춘 기록은 다시 못 써요
     function lockOk(key) {
       return exists(/databases/$(db)/documents/talkLock/$(key))
+        && getAfter(/databases/$(db)/documents/talkUnlock/$(key)).data.t == request.time
         && getAfter(/databases/$(db)/documents/talkUnlock/$(key)).data.h
            == get(/databases/$(db)/documents/talkLock/$(key)).data.h;
     }
@@ -104,7 +106,9 @@ service cloud.firestore {
     }
     match /talkUnlock/{key} {
       allow read: if false;
-      allow create, update: if validHash(request.resource.data);
+      allow create, update: if request.resource.data.keys().hasOnly(['h', 't'])
+        && request.resource.data.h is string && request.resource.data.h.size() == 64
+        && request.resource.data.t == request.time;
     }
 
     match /{document=**} {

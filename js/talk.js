@@ -220,7 +220,7 @@
           toast("글을 올렸어요");
           await load(); openPost(ref.id); // 창을 닫지 않고 바로 올린 글로 바꿔요
         } else {
-          batch.set(fb.db.doc(`talkUnlock/${post.id}`), { h: await hashPw(post.id, val("pw")) });
+          batch.set(fb.db.doc(`talkUnlock/${post.id}`), { h: await hashPw(post.id, val("pw")), t: fb.FV.serverTimestamp() });
           batch.update(fb.db.doc(`talk/${post.id}`), { ...data, updatedAt: fb.FV.serverTimestamp() });
           await batch.commit();
           toast("수정했어요");
@@ -322,7 +322,7 @@
       return askPw($("[data-own]", modalBody), "글 비밀번호", async (pw) => {
         // 비밀번호가 맞는지 먼저 확인 (내용은 그대로 다시 저장)
         const batch = fb.db.batch();
-        batch.set(fb.db.doc(`talkUnlock/${id}`), { h: await hashPw(id, pw) });
+        batch.set(fb.db.doc(`talkUnlock/${id}`), { h: await hashPw(id, pw), t: fb.FV.serverTimestamp() });
         batch.update(fb.db.doc(`talk/${id}`), { title: p.title });
         await batch.commit();
         writeForm(p);
@@ -332,7 +332,7 @@
     if (own && own.dataset.ownAct === "del") {
       return askPw($("[data-own]", modalBody), "글 비밀번호 (삭제)", async (pw) => {
         const batch = fb.db.batch();
-        batch.set(fb.db.doc(`talkUnlock/${id}`), { h: await hashPw(id, pw) });
+        batch.set(fb.db.doc(`talkUnlock/${id}`), { h: await hashPw(id, pw), t: fb.FV.serverTimestamp() });
         batch.delete(fb.db.doc(`talk/${id}`));
         batch.delete(fb.db.doc(`talkLock/${id}`));
         await batch.commit();
@@ -353,7 +353,7 @@
       return askPw(cd.closest("li"), "댓글 비밀번호", async (pw) => {
         const key = `${id}__${cid}`;
         const batch = fb.db.batch();
-        batch.set(fb.db.doc(`talkUnlock/${key}`), { h: await hashPw(key, pw) });
+        batch.set(fb.db.doc(`talkUnlock/${key}`), { h: await hashPw(key, pw), t: fb.FV.serverTimestamp() });
         batch.delete(fb.db.doc(`talk/${id}/comments/${cid}`));
         batch.delete(fb.db.doc(`talkLock/${key}`));
         await batch.commit();
