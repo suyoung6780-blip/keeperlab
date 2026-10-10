@@ -105,13 +105,24 @@
   })();
 
   /* ---------- pages (hash router: #/shop, #/training …) ---------- */
-  const PAGES = ["home", "about", "shop", "training", "archive", "tactics"];
-  const TITLES = { home: "", about: "소개", shop: "샵", training: "트레이닝", archive: "아카이브", tactics: "택티컬 패드" };
+  const PAGES = ["home", "about", "shop", "training", "coach", "archive", "tactics", "talk"];
+  const TITLES = { home: "", about: "소개", shop: "샵", training: "트레이닝", coach: "FOR COACH", archive: "아카이브", tactics: "택티컬 패드", talk: "GK 코치 대화방" };
+  const COACH_PAGES = ["coach", "archive", "tactics", "talk"]; // 메뉴에서 FOR COACH 아래에 묶여요
+  // FOR COACH 안의 세 페이지 위쪽에 작은 이동 탭
+  ["archive", "tactics", "talk"].forEach((id) => {
+    const sec = document.getElementById(id); if (!sec) return;
+    sec.insertAdjacentHTML("afterbegin", `<nav class="coach-tabs" aria-label="FOR COACH">
+      <a href="#/coach" class="ct-home">FOR COACH</a>
+      ${[["archive", "ARCHIVE"], ["tactics", "TACTICAL"], ["talk", "TALK"]].map(([k, n]) => `<a href="#/${k}" class="${k === id ? "is-current" : ""}" ${k === id ? 'aria-current="page"' : ""}>${n}</a>`).join("")}
+    </nav>`);
+  });
   function showPage(id) {
     $$("main [data-page]").forEach((el) => { el.hidden = el.dataset.page !== id; });
     document.body.dataset.page = id;
+    const navId = COACH_PAGES.includes(id) ? "coach" : id;
+    $$(".nav-sub a").forEach((a) => a.classList.toggle("is-current", a.getAttribute("href") === "#/" + id));
     $$("[data-nav]").forEach((a) => {
-      const on = a.dataset.nav === id;
+      const on = a.dataset.nav === navId;
       a.classList.toggle("is-current", on);
       if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });

@@ -1083,3 +1083,66 @@ body.pad-full .float-social, body.pad-full .to-top { display: none; }
 .res-badge { position: absolute; top: 10px; left: 10px; z-index: 2; padding: 3px 10px; border-radius: 999px; background: #ffd23f; color: #111; font: 700 12px var(--sans); filter: none; }
 .res-review { justify-content: flex-start; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); }
 .res-review span { color: #ffd23f; font-size: 13px; margin-right: auto; }
+
+/* ---------- FOR COACH (메뉴 · 허브 · 탭) ---------- */
+.nav-drop { position: relative; display: flex; }
+.nav-sub { position: absolute; top: 100%; left: 50%; transform: translate(-50%, 6px); min-width: 230px; padding: 8px; background: var(--ink); border: 1px solid var(--line-2); border-radius: 8px; box-shadow: 0 18px 40px rgba(0,0,0,.5); opacity: 0; visibility: hidden; transition: opacity .18s, transform .18s; z-index: 60; }
+.nav-drop:hover .nav-sub, .nav-drop:focus-within .nav-sub { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.nav-links .nav-sub a { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; height: auto; padding: 10px 12px; border-radius: 6px; letter-spacing: .04em; }
+.nav-links .nav-sub a::after { display: none; }
+.nav-sub a b { font-size: 13px; color: var(--pure); }
+.nav-sub a span { font-size: 12px; font-weight: 500; color: var(--mute); letter-spacing: 0; }
+.nav-sub a:hover, .nav-sub a.is-current { background: var(--ink-3); }
+.side-links a.side-sub { padding: 10px 0 10px 18px; }
+.side-links a.side-sub b { font-size: 18px; color: var(--mute-2); }
+.coach-hub { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.hub-card { display: flex; flex-direction: column; gap: 6px; padding: 28px 24px; border: 1px solid var(--line-2); border-radius: 10px; background: linear-gradient(180deg, var(--ink-2), var(--ink)); transition: border-color .2s, transform .2s; min-height: 280px; }
+.hub-card:hover { border-color: var(--pure); transform: translateY(-3px); }
+.hub-num { font: 12px var(--mono); color: var(--mute); }
+.hub-card b { font-family: var(--display); font-weight: 400; font-size: clamp(36px, 4vw, 52px); line-height: 1; letter-spacing: .02em; margin-top: 8px; }
+.hub-card h3 { margin: 4px 0 0; font-size: 18px; }
+.hub-card p { margin: 6px 0 0; color: var(--mute-2); font-size: 14px; flex: 1; }
+.hub-go { margin-top: 16px; font-weight: 700; font-size: 14px; }
+.coach-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 28px; }
+.coach-tabs a { padding: 6px 14px; border: 1px solid var(--line-2); border-radius: 999px; font: 700 12px var(--sans); letter-spacing: .06em; color: var(--mute-2); }
+.coach-tabs a:hover { color: var(--pure); border-color: var(--mute); }
+.coach-tabs a.is-current { background: var(--pure); color: var(--black); border-color: var(--pure); }
+.coach-tabs .ct-home { border-style: dashed; }
+@media (max-width: 800px) { .coach-hub { grid-template-columns: 1fr; } .hub-card { min-height: 0; } }
+
+/* ---------- GK 코치 대화방 ---------- */
+.talk-cats { margin: 0 0 14px; }
+.talk-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.talk-row { width: 100%; display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; align-items: center; gap: 6px 16px; padding: 16px 6px; background: none; border: 0; border-bottom: 1px solid var(--line); color: inherit; text-align: left; cursor: pointer; font: inherit; }
+.talk-row:hover { background: var(--ink-2); }
+.talk-cat { justify-self: start; padding: 3px 10px; border: 1px solid var(--line-2); border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--mute-2); white-space: nowrap; }
+.talk-title { font-weight: 700; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.talk-title em { font-style: normal; font-weight: 500; font-size: 12px; color: var(--mute); margin-left: 8px; }
+.talk-meta { font-size: 13px; color: var(--mute); white-space: nowrap; }
+.talk-view h3 { margin-top: 10px; }
+.talk-info { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0 0 18px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; }
+.talk-info dt { color: var(--mute); font-weight: 600; }
+.talk-info dd { margin: 0; color: var(--pure); word-break: break-all; }
+.talk-body { color: var(--white) !important; }
+.talk-own { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 0; }
+.pw-ask { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 0; }
+.pw-ask input { flex: 1 1 160px; min-width: 0; min-height: 38px; padding: 0 12px; background: var(--ink-2); border: 1px solid var(--line-2); border-radius: var(--radius); color: var(--pure); font: 15px var(--sans); }
+.talk-comments { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); }
+.talk-comments h4 { margin: 0 0 12px; font-size: 15px; }
+.talk-comments ul { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 10px; }
+.talk-comments li { padding: 12px 14px; background: var(--ink-2); border-radius: 6px; }
+.tc-head { display: flex; align-items: baseline; gap: 10px; font-size: 13px; }
+.tc-head span { color: var(--mute); }
+.tc-del { margin-left: auto; background: none; border: 0; color: var(--mute); font-size: 12px; cursor: pointer; }
+.tc-del:hover { color: #ff8a8a; }
+.tc-body { margin-top: 4px; color: var(--mute-2); font-size: 14px; word-break: break-word; }
+.talk-cform textarea { width: 100%; }
+.talk-cfields { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; }
+.talk-cfields input { min-width: 0; }
+@media (max-width: 700px) {
+  .talk-row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .talk-title { white-space: normal; }
+  .talk-cfields { grid-template-columns: 1fr 1fr; }
+  .talk-cfields input[name="pw"] { grid-column: 1 / -1; }
+  .talk-cfields button { grid-column: 1 / -1; }
+}

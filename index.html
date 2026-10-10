@@ -31,8 +31,14 @@
       <a href="#/about" data-nav="about">ABOUT</a>
       <a href="#/shop" data-nav="shop">SHOP</a>
       <a href="#/training" data-nav="training">TRAINING</a>
-      <a href="#/archive" data-nav="archive">ARCHIVE</a>
-      <a href="#/tactics" data-nav="tactics">TACTICAL</a>
+      <div class="nav-drop">
+        <a href="#/coach" data-nav="coach" aria-haspopup="true">FOR COACH</a>
+        <div class="nav-sub" role="menu" aria-label="FOR COACH">
+          <a href="#/archive" role="menuitem"><b>ARCHIVE</b><span>자료 · 영상 · 논문</span></a>
+          <a href="#/tactics" role="menuitem"><b>TACTICAL</b><span>택티컬 패드</span></a>
+          <a href="#/talk" role="menuitem"><b>TALK</b><span>GK 코치 대화방</span></a>
+        </div>
+      </div>
     </nav>
   </header>
 
@@ -46,8 +52,10 @@
       <a href="#/about"><b>ABOUT</b><span>키퍼랩 소개</span></a>
       <a href="#/shop"><b>SHOP</b><span>골키퍼 장비</span></a>
       <a href="#/training"><b>TRAINING</b><span>골키퍼 레슨</span></a>
-      <a href="#/archive"><b>ARCHIVE</b><span>자료 · 영상</span></a>
-      <a href="#/tactics"><b>TACTICAL</b><span>택티컬 패드</span></a>
+      <a href="#/coach"><b>FOR COACH</b><span>코치를 위한 공간</span></a>
+      <a href="#/archive" class="side-sub"><b>ARCHIVE</b><span>자료 · 영상 · 논문</span></a>
+      <a href="#/tactics" class="side-sub"><b>TACTICAL</b><span>택티컬 패드</span></a>
+      <a href="#/talk" class="side-sub"><b>TALK</b><span>GK 코치 대화방</span></a>
     </nav>
   </aside>
 
@@ -240,6 +248,32 @@
       </div>
     </section>
 
+    <!-- FOR COACH -->
+    <section class="section page coach" data-page="coach" id="coach" hidden>
+      <header class="sec-head">
+        <span class="sec-num">04</span>
+        <div>
+          <p class="sec-kicker">For Coach</p>
+          <h2 class="sec-title">골키퍼 코치를 위한<br />공간</h2>
+        </div>
+        <p class="sec-desc">자료를 나누고, 전술을 그리고, 코치들끼리 이야기하는 곳. KEEPER LAB이 골키퍼 코치들과 함께 만들어갑니다.</p>
+      </header>
+      <div class="coach-hub">
+        <a class="hub-card" href="#/archive">
+          <span class="hub-num">01</span><b>ARCHIVE</b><h3>아카이브</h3>
+          <p>영상 · 논문 · 자료를 함께 쌓아요. 누구나 올릴 수 있고, 확인 후 공개돼요.</p><span class="hub-go">아카이브 보기 →</span>
+        </a>
+        <a class="hub-card" href="#/tactics">
+          <span class="hub-num">02</span><b>TACTICAL</b><h3>택티컬 패드</h3>
+          <p>골키퍼 상황을 그리고, 움직임을 재생하고, 링크로 공유해요.</p><span class="hub-go">패드 열기 →</span>
+        </a>
+        <a class="hub-card" href="#/talk">
+          <span class="hub-num">03</span><b>TALK</b><h3>GK 코치 대화방</h3>
+          <p>코치 공고 · 코치 자리 찾기 · 선수 모집 · 이적과 채용, 그리고 골키퍼 이야기.</p><span class="hub-go">대화방 가기 →</span>
+        </a>
+      </div>
+    </section>
+
     <!-- 04 ARCHIVE -->
     <section class="section page archive" data-page="archive" id="archive" hidden>
       <header class="sec-head">
@@ -310,6 +344,18 @@
       </div>
       <div class="board-grid" id="boardGrid"></div>
     </section>
+    <!-- GK 코치 대화방 -->
+    <section class="section page talk" data-page="talk" id="talk" hidden>
+      <header class="sec-head">
+        <span class="sec-num">04</span>
+        <div>
+          <p class="sec-kicker">GK Coach Talk</p>
+          <h2 class="sec-title">GK 코치<br />대화방</h2>
+        </div>
+        <button class="btn btn-solid" id="talkWrite">+ 글쓰기</button>
+      </header>
+      <div id="talkPanel"></div>
+    </section>
   </main>
 
   <footer class="footer">
@@ -322,7 +368,7 @@
           <div><dt>문의</dt><dd><a href="https://pf.kakao.com/_yPxaxiX/chat" target="_blank" rel="noopener noreferrer">카카오톡 채널</a> · 인스타그램 DM <a href="https://www.instagram.com/keeper1ab/" target="_blank" rel="noopener noreferrer">@keeper1ab</a></dd></div>
         </dl>
         <nav class="ft-links" aria-label="푸터 메뉴">
-          <a href="#/about">브랜드 소개</a><a href="#/shop">샵</a><a href="#/training">트레이닝</a><a href="#/archive">아카이브</a><a href="#/tactics">택티컬 패드</a>
+          <a href="#/about">브랜드 소개</a><a href="#/shop">샵</a><a href="#/training">트레이닝</a><a href="#/coach">FOR COACH</a><a href="#/archive">아카이브</a><a href="#/tactics">택티컬 패드</a><a href="#/talk">코치 대화방</a>
         </nav>
       </div>
       <div class="ft-contact">
@@ -375,5 +421,6 @@
   <script src="js/kl-firebase.js"></script>
   <script src="js/app.js"></script>
   <script src="js/feedback.js"></script>
+  <script src="js/talk.js"></script>
 </body>
 </html>

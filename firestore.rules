@@ -50,6 +50,63 @@ service cloud.firestore {
         && (!('sections' in d) || (d.sections is list && d.sections.size() <= 30));
     }
 
+    // GK 코치 대화방: 누구나 글·댓글을 쓸 수 있어요.
+    // 수정·삭제는 글 비밀번호로 확인해요 — 비밀번호는 암호화된 값(talkLock)만 저장되고 아무도 읽을 수 없어요.
+    // 확인 방법: 같은 묶음 쓰기 안에서 talkUnlock에 넣은 값이 talkLock과 같아야 해요.
+    function lockOk(key) {
+      return exists(/databases/$(db)/documents/talkLock/$(key))
+        && getAfter(/databases/$(db)/documents/talkUnlock/$(key)).data.h
+           == get(/databases/$(db)/documents/talkLock/$(key)).data.h;
+    }
+    function validHash(d) {
+      return d.keys().hasOnly(['h']) && d.h is string && d.h.size() == 64;
+    }
+    function validPost(d) {
+      return d.cat in ['GK코치 공고', '코치 자리 찾기', 'GK선수 모집', '이적 · 채용', '자유 이야기']
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 80
+        && d.body is string && d.body.size() > 0 && d.body.size() <= 5000
+        && d.author is string && d.author.size() > 0 && d.author.size() <= 20
+        && (!('org' in d) || (d.org is string && d.org.size() <= 30))
+        && (!('contact' in d) || (d.contact is string && d.contact.size() <= 80))
+        && (!('region' in d) || (d.region is string && d.region.size() <= 20));
+    }
+    match /talk/{pid} {
+      allow read: if true;
+      allow create: if validPost(request.resource.data)
+        && request.resource.data.keys().hasOnly(['cat', 'title', 'body', 'author', 'org', 'contact', 'region', 'createdAt'])
+        && request.resource.data.createdAt == request.time
+        && existsAfter(/databases/$(db)/documents/talkLock/$(pid));
+      allow update: if isAdmin()
+        || (lockOk(pid) && validPost(request.resource.data)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cat', 'title', 'body', 'contact', 'region', 'updatedAt']));
+      allow delete: if isAdmin() || lockOk(pid);
+
+      match /comments/{cid} {
+        allow read: if true;
+        allow create: if request.resource.data.keys().hasOnly(['author', 'org', 'body', 'createdAt'])
+          && request.resource.data.author is string && request.resource.data.author.size() > 0 && request.resource.data.author.size() <= 20
+          && (!('org' in request.resource.data) || (request.resource.data.org is string && request.resource.data.org.size() <= 30))
+          && request.resource.data.body is string && request.resource.data.body.size() > 0 && request.resource.data.body.size() <= 1000
+          && request.resource.data.createdAt == request.time
+          && exists(/databases/$(db)/documents/talk/$(pid))
+          && existsAfter(/databases/$(db)/documents/talkLock/$(pid + '__' + cid));
+        allow delete: if isAdmin() || lockOk(pid + '__' + cid);
+      }
+    }
+    match /talkLock/{key} {
+      allow read: if false;
+      // 새 글/댓글과 같은 묶음에서만 처음 한 번 만들 수 있어요 (덮어쓰기 불가)
+      allow create: if validHash(request.resource.data)
+        && (existsAfter(/databases/$(db)/documents/talk/$(key))
+            || (key.matches('^[A-Za-z0-9]+__[A-Za-z0-9]+$')
+                && existsAfter(/databases/$(db)/documents/talk/$(key.split('__')[0])/comments/$(key.split('__')[1]))));
+      allow delete: if isAdmin() || lockOk(key);
+    }
+    match /talkUnlock/{key} {
+      allow read: if false;
+      allow create, update: if validHash(request.resource.data);
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
