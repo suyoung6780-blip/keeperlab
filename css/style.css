@@ -1147,3 +1147,12 @@ body.pad-full .float-social, body.pad-full .to-top { display: none; }
   .talk-cfields input[name="pw"] { grid-column: 1 / -1; }
   .talk-cfields button { grid-column: 1 / -1; }
 }
+.talk-kind { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.talk-kind[hidden] { display: none; }
+.kind-opt { position: relative; cursor: pointer; }
+.kind-opt input { position: absolute; opacity: 0; pointer-events: none; }
+.kind-opt span { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border: 1px solid var(--line-2); border-radius: 8px; color: var(--mute); font-size: 13px; font-weight: 500; }
+.kind-opt span b { color: var(--mute-2); font-size: 15px; }
+.kind-opt input:checked + span { border-color: var(--pure); background: var(--ink-3); color: var(--mute-2); }
+.kind-opt input:checked + span b { color: var(--pure); }
+.kind-opt input:focus-visible + span { outline: 2px solid var(--pure); outline-offset: 2px; }

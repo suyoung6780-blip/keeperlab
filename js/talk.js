@@ -133,10 +133,18 @@
       tip: "GK 코치가 일할 팀을 찾을 때 써요. 프로필을 함께 적어주세요.",
       body: "■ 희망 지역 : \n■ 가능 요일 · 시간 : \n■ 희망 급여 : \n■ 지도 가능 연령 : \n■ 경력 : \n■ 자격증 : \n\n■ 자기소개 : ",
     },
-    "GK선수 모집 및 팀 모집": {
-      title: "예) [선수 모집] OO FC U15 골키퍼 모집 / [팀 찾기] 서울 지역 GK 선수 프로필",
-      tip: "팀이 GK 선수를 모집하거나, GK 선수가 뛸 팀을 찾을 때 써요.",
-      body: "■ 구분 : 선수 모집 / 팀 찾기\n■ 지역 : \n■ 팀 이름 (팀이 쓸 때) : \n\n[선수 프로필]\n■ 나이 · 학년 : \n■ 키 · 주발 : \n■ 경력 · 소속 : \n■ 가능한 훈련 요일 · 시간 : \n\n■ 하고 싶은 말 : ",
+    // 이 말머리는 누가 쓰는지에 따라 양식이 둘로 나뉘어요
+    "GK선수 모집 및 팀 모집|team": {
+      title: "예) OO FC U15 골키퍼 선수 모집합니다",
+      tip: "팀 작성 시 — 우리 팀에서 뛸 GK 선수를 모집해요. 제목 앞에 [선수 모집]이 붙어요.",
+      body: "■ 팀 이름 : \n■ 지역 : \n■ 모집 연령 · 학년 : \n■ 모집 인원 : \n■ 팀 소개 : \n■ 지원 방법 : \n\n■ 추가 내용 : ",
+      prefix: "[선수 모집]",
+    },
+    "GK선수 모집 및 팀 모집|player": {
+      title: "예) 서울 지역 GK 선수, 뛸 팀 찾아요",
+      tip: "선수 작성 시 — GK 선수가 뛸 팀을 찾아요. 제목 앞에 [팀 찾기]가 붙어요.",
+      body: "[선수 프로필]\n■ 희망 지역 : \n■ 나이 · 학년 : \n■ 키 · 주발 : \n■ 경력 · 소속 : \n\n■ 하고 싶은 말 : ",
+      prefix: "[팀 찾기]",
     },
     "GK코치들의 이야기": {
       title: "예) 겨울철 GK 훈련, 어떻게 하세요?",
@@ -155,6 +163,10 @@
           <label>말머리<select name="cat" required>${CATS.map((c) => `<option ${post && post.cat === c ? "selected" : ""}>${c}</option>`).join("")}</select></label>
           <label>지역<select name="region">${regionOptions(post ? post.region : "")}</select></label>
         </div>
+        <div class="talk-kind" hidden role="radiogroup" aria-label="누가 쓰나요">
+          <label class="kind-opt"><input type="radio" name="kind" value="team" checked /><span><b>팀 작성 시</b>선수 모집</span></label>
+          <label class="kind-opt"><input type="radio" name="kind" value="player" /><span><b>선수 작성 시</b>팀 찾기</span></label>
+        </div>
         <p class="form-hint talk-tip"></p>
         <label>제목<input name="title" required maxlength="80" value="${v("title")}" /></label>
         <label>내용<textarea name="body" required maxlength="5000" rows="12">${v("body")}</textarea></label>
@@ -168,14 +180,19 @@
       </form>`, true);
     const f = $("#talkForm", body);
     // 말머리를 바꾸면 제목 예시 · 안내 · 내용 양식이 바뀌어요 (이미 쓴 내용은 그대로 둬요)
+    const kindBox = $(".talk-kind", f);
+    const guideKey = () => (f.cat.value === "GK선수 모집 및 팀 모집" ? `${f.cat.value}|${f.kind.value}` : f.cat.value);
     const applyGuide = () => {
-      const g = GUIDE[f.cat.value] || GUIDE["GK코치들의 이야기"];
+      kindBox.hidden = f.cat.value !== "GK선수 모집 및 팀 모집";
+      const g = GUIDE[guideKey()] || GUIDE["GK코치들의 이야기"];
       f.title.placeholder = g.title;
       $(".talk-tip", f).textContent = g.tip;
       f.body.placeholder = g.body ? "" : "자유롭게 적어주세요";
       if (isTemplate(f.body.value)) f.body.value = g.body;
     };
     f.cat.addEventListener("change", applyGuide);
+    $$("[name=kind]", f).forEach((r) => r.addEventListener("change", applyGuide));
+    if (post && post.cat === "GK선수 모집 및 팀 모집" && post.title.startsWith("[팀 찾기]")) f.kind.value = "player";
     applyGuide();
     f.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -183,7 +200,11 @@
       if (!val("title") || isTemplate(val("body"))) return toast("제목과 내용을 적어주세요");
       // 양식에서 비워둔 줄(■ 항목 : )은 빼고 올려요
       const cleanBody = val("body").split("\n").filter((l) => !/^■[^:]*:\s*$/.test(l.trim())).join("\n").replace(/\n{3,}/g, "\n\n").trim();
-      const data = { cat: val("cat"), title: val("title"), body: cleanBody, contact: val("contact"), region: val("region") };
+      // 선수 모집 / 팀 찾기는 제목 앞에 구분 표시를 붙여요
+      const g = GUIDE[guideKey()] || {};
+      let title = val("title").replace(/^\[(선수 모집|팀 찾기)\]\s*/, "");
+      if (g.prefix) title = `${g.prefix} ${title}`;
+      const data = { cat: val("cat"), title: title.slice(0, 80), body: cleanBody, contact: val("contact"), region: val("region") };
       if (!data.body) return toast("내용을 적어주세요");
       const btn = $(".btn-solid", f); btn.disabled = true;
       try {
