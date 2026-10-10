@@ -104,6 +104,14 @@ service cloud.firestore {
         allow delete: if isAdmin() || lockOk(pid + '__' + cid);
       }
     }
+    // 대화방 공지: 누구나 보고, 관리자만 올리고 고치고 내려요
+    match /talkNotice/{id} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 500
+        && request.resource.data.where is list && request.resource.data.where.size() > 0;
+      allow delete: if isAdmin();
+    }
     match /talkLock/{key} {
       allow read: if false;
       // 새 글/댓글과 같은 묶음에서만 처음 한 번 만들 수 있어요 (덮어쓰기 불가)

@@ -44,7 +44,7 @@
     return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
   }
 
-  let fb = null, posts = [], cat = "all", search = "", page = 1, loaded = false;
+  let fb = null, posts = [], notices = [], cat = "all", search = "", page = 1, loaded = false;
   const boot = () => KLFB.boot().then((x) => (fb = x));
 
   async function load() {
@@ -54,6 +54,10 @@
       await boot();
       const snap = await fb.db.collection("talk").orderBy("createdAt", "desc").limit(300).get();
       posts = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      try { // 공지 (관리자만 쓰고, 고른 탭에만 보여요)
+        const ns = await fb.db.collection("talkNotice").orderBy("createdAt", "desc").get();
+        notices = ns.docs.map((d) => ({ id: d.id, ...d.data() }));
+      } catch (e) { console.error(e); notices = []; }
       loaded = true;
       render();
     } catch (e) {
@@ -77,6 +81,13 @@
       <div class="chips talk-cats" role="tablist" aria-label="말머리">
         ${["all", ...CATS].map((c) => `<button class="chip ${c === cat ? "is-active" : ""}" data-cat="${esc(c)}" role="tab" aria-selected="${c === cat}">${c === "all" ? "전체" : esc(c)}</button>`).join("")}
       </div>
+      ${(() => {
+        const here = notices.filter((n) => (n.where || []).includes(cat));
+        return here.length ? `<div class="talk-notices">${here.map((n) => `
+          <div class="talk-notice"><b>공지</b><p>${esc(n.text).replace(/\n/g, "<br>")}</p>
+            ${admin ? `<span class="tn-acts"><button data-notice-edit="${n.id}">수정</button><button data-notice-del="${n.id}">삭제</button></span>` : ""}
+          </div>`).join("")}</div>` : "";
+      })()}
       <form class="fb-search talk-search" role="search">
         <input name="q" type="search" value="${esc(search)}" placeholder="제목 · 내용 · 이름 · 지역 검색" aria-label="대화방 검색" autocomplete="off" />
         <button class="btn btn-ghost btn-sm">검색</button>
@@ -102,6 +113,14 @@
     if (c) { cat = c.dataset.cat; page = 1; return render(); }
     const pg = e.target.closest("[data-pg]");
     if (pg && !pg.disabled) { page = +pg.dataset.pg; render(); root.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+    const ne = e.target.closest("[data-notice-edit]");
+    if (ne && KLFB.isAdmin()) return noticeForm(notices.find((n) => n.id === ne.dataset.noticeEdit));
+    const nd = e.target.closest("[data-notice-del]");
+    if (nd && KLFB.isAdmin()) {
+      if (nd.dataset.sure !== "1") { nd.dataset.sure = "1"; nd.textContent = "한 번 더 누르면 삭제"; return; }
+      await fb.db.doc(`talkNotice/${nd.dataset.noticeDel}`).delete();
+      toast("공지를 내렸어요"); return load();
+    }
     const row = e.target.closest("[data-post]");
     if (row) return openPost(row.dataset.post);
     const b = e.target.closest("[data-talk]"); if (!b) return;
@@ -159,6 +178,7 @@
     const admin = KLFB.isAdmin(); // 관리자는 비밀번호 없이 쓰고 고쳐요
     const body = openModal(`
       <h3>${post ? "글 수정" : "글쓰기"}</h3><div class="meta">GK 코치 대화방</div>
+      ${admin && !post ? modeTabs("post") : ""}
       <form class="form" id="talkForm">
         <div class="form-row">
           <label>말머리<select name="cat" required>${CATS.map((c) => `<option ${post && post.cat === c ? "selected" : ""}>${c}</option>`).join("")}</select></label>
@@ -239,6 +259,54 @@
       }
     });
   }
+  /* ---------- 공지 (관리자 전용) ---------- */
+  const modeTabs = (on) => `<div class="talk-mode" role="tablist" aria-label="글 종류">
+      <button type="button" class="${on === "post" ? "is-on" : ""}" data-mode="post" role="tab" aria-selected="${on === "post"}">일반 글</button>
+      <button type="button" class="${on === "notice" ? "is-on" : ""}" data-mode="notice" role="tab" aria-selected="${on === "notice"}">공지</button>
+    </div>`;
+  const PLACES = [["all", "전체"], ...CATS.map((c) => [c, c])];
+  function noticeForm(n) {
+    const where = n ? n.where || [] : ["all"];
+    const body = openModal(`
+      <h3>${n ? "공지 수정" : "글쓰기"}</h3><div class="meta">공지는 고른 곳 목록 맨 위에 보여요 · 관리자만 지울 수 있어요</div>
+      ${n ? "" : modeTabs("notice")}
+      <form class="form" id="noticeForm">
+        <label>공지 내용<textarea name="text" required maxlength="500" rows="5" placeholder="예) GK 코치 대화방이 열렸어요! 공고 글은 양식에 맞춰 써주세요.">${esc(n ? n.text : "")}</textarea></label>
+        <fieldset class="sec-row notice-where">
+          <legend>공지를 띄울 곳</legend>
+          <div class="nw-list">
+            ${PLACES.map(([k, label]) => `<label class="check"><input type="checkbox" name="where" value="${esc(k)}" ${where.includes(k) ? "checked" : ""} /> <span>${esc(label)}</span></label>`).join("")}
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" data-where-all>모두 선택</button>
+        </fieldset>
+        <div class="form-actions"><button type="button" class="btn btn-ghost btn-sm" data-close>취소</button><button class="btn btn-solid btn-sm">${n ? "공지 저장" : "공지 올리기"}</button></div>
+      </form>`, true);
+    const f = $("#noticeForm", body);
+    $("[data-where-all]", f).addEventListener("click", () => {
+      const boxes = $$("[name=where]", f), all = boxes.every((b) => b.checked);
+      boxes.forEach((b) => { b.checked = !all; });
+    });
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = f.text.value.trim();
+      const places = $$("[name=where]:checked", f).map((b) => b.value);
+      if (!text) return toast("공지 내용을 적어주세요");
+      if (!places.length) return toast("공지를 띄울 곳을 하나 이상 골라주세요");
+      const btn = $(".btn-solid", f); btn.disabled = true;
+      try {
+        if (n) await fb.db.doc(`talkNotice/${n.id}`).update({ text, where: places });
+        else await fb.db.collection("talkNotice").add({ text, where: places, createdAt: fb.FV.serverTimestamp() });
+        closeModal(); toast(n ? "공지를 고쳤어요" : "공지를 올렸어요"); load();
+      } catch (err) { console.error(err); btn.disabled = false; toast("공지를 올리지 못했어요"); }
+    });
+  }
+  // 글쓰기 창의 [일반 글 | 공지] 전환
+  modalBody.addEventListener("click", (e) => {
+    const m = e.target.closest("[data-mode]"); if (!m || !KLFB.isAdmin()) return;
+    if (m.dataset.mode === "notice" && !$("#noticeForm", modalBody)) noticeForm();
+    if (m.dataset.mode === "post" && !$("#talkForm", modalBody)) writeForm();
+  });
+
   document.getElementById("talkWrite").addEventListener("click", () => {
     if (!KLFB.ready()) return toast("대화방 준비 중이에요");
     writeForm();

@@ -1158,3 +1158,14 @@ body.pad-full .float-social, body.pad-full .to-top { display: none; }
 .kind-opt input:focus-visible + span { outline: 2px solid var(--pure); outline-offset: 2px; }
 .talk-official { font-style: normal; display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 4px; background: var(--pure); color: var(--black); font: 800 10px var(--sans); letter-spacing: .06em; vertical-align: 1px; }
 .talk-cform.is-admin .talk-cfields { grid-template-columns: 1fr 1fr auto; }
+.talk-notices { display: grid; gap: 8px; margin: 0 0 14px; }
+.talk-notice { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 1px solid #ffd23f66; border-radius: 8px; background: #ffd23f0f; }
+.talk-notice b { flex: none; padding: 2px 9px; border-radius: 4px; background: #ffd23f; color: #111; font-size: 12px; font-weight: 800; }
+.talk-notice p { margin: 0; flex: 1; color: var(--white); font-size: 14px; line-height: 1.7; word-break: break-word; }
+.tn-acts { flex: none; display: flex; gap: 8px; }
+.tn-acts button { background: none; border: 0; color: var(--mute); font-size: 12px; cursor: pointer; padding: 2px; }
+.tn-acts button:hover { color: var(--pure); }
+.talk-mode { display: inline-flex; gap: 4px; padding: 4px; margin: 0 0 18px; border: 1px solid var(--line-2); border-radius: 999px; }
+.talk-mode button { padding: 6px 18px; border: 0; border-radius: 999px; background: transparent; color: var(--mute-2); font: 700 13px var(--sans); cursor: pointer; }
+.talk-mode button.is-on { background: var(--pure); color: var(--black); }
+.notice-where .nw-list { display: flex; flex-wrap: wrap; gap: 10px 18px; }
