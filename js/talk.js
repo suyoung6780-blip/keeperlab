@@ -8,7 +8,7 @@
   const root = document.getElementById("talkPanel");
   if (!root) return;
 
-  const CATS = ["GK코치 공고", "GK코치 자리 찾기", "GK선수 모집", "자유 이야기"];
+  const CATS = ["GK코치 공고", "GK코치 자리 찾기", "GK선수 모집 및 팀 모집", "GK코치들의 이야기"];
   const PER_PAGE = 10;
 
   const $ = (s, r = document) => r.querySelector(s);
