@@ -40,6 +40,14 @@
     return a.setPersistence(firebase.auth.Auth.Persistence.NONE).then(() => a);
   }
 
+  // 로그인: 코치는 '로그인 유지'(브라우저를 닫아도 유지), 관리자·선수는 탭을 닫으면 로그아웃
+  async function signIn(email, password, { remember = false } = {}) {
+    await boot();
+    const P = firebase.auth.Auth.Persistence;
+    await fb.auth.setPersistence(remember ? P.LOCAL : P.SESSION);
+    return fb.auth.signInWithEmailAndPassword(email, password);
+  }
+
   const isAdmin = () => !!(fb && fb.auth.currentUser && fb.auth.currentUser.email === ADMIN_EMAIL);
 
   function authError(e) {
@@ -64,15 +72,14 @@
       e.preventDefault();
       const btn = f.querySelector(".btn-solid"); btn.disabled = true;
       try {
-        await boot();
-        await fb.auth.signInWithEmailAndPassword(ADMIN_EMAIL, f.code.value.trim());
+        await signIn(ADMIN_EMAIL, f.code.value.trim());
         closeModal(); toast("관리자 모드예요");
       } catch (err) { toast(authError(err)); btn.disabled = false; }
     });
   }
 
   window.KLFB = {
-    ready, boot, helperAuth, isAdmin, authError, adminLogin,
+    ready, boot, helperAuth, isAdmin, authError, adminLogin, signIn, ADMIN_EMAIL,
     get fb() { return fb; },
     signOut: () => (fb ? fb.auth.signOut() : Promise.resolve()),
     onAuth: (cb) => { listeners.add(cb); return () => listeners.delete(cb); },

@@ -1,8 +1,8 @@
 /* =========================================================
    FOR COACH — GK 코치 대화방 (게시판 + 댓글)
-   - 누구나 이름(소속)과 글 비밀번호만 적으면 바로 올라가요
-   - 글/댓글 수정·삭제는 그 비밀번호로 (비밀번호는 암호화된 값만 저장, 아무도 못 읽어요)
-   - 관리자(트레이닝·아카이브와 같은 관리자 로그인)는 어떤 글이든 삭제할 수 있어요
+   - 아이디로 코치 가입 신청 → 관리자가 승인하면 글을 보고 쓸 수 있어요
+   - 내 글 · 댓글은 내 계정으로 수정 · 삭제 (글 비밀번호 없음)
+   - 관리자(트레이닝 · 아카이브와 같은 관리자 로그인)는 가입 승인, 공지, 모든 글 관리
    ========================================================= */
 (function () {
   const root = document.getElementById("talkPanel");
@@ -38,34 +38,154 @@
     t.textContent = msg; t.classList.add("show");
     clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2400);
   }
-  // 비밀번호는 글마다 다른 값과 섞어서 암호화한 결과만 보내요
-  async function hashPw(key, pw) {
-    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`keeperlab-talk:${key}:${pw}`));
-    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
-  }
 
-  let fb = null, posts = [], notices = [], cat = "all", search = "", page = 1, loaded = false;
+  /* ---------- 코치 계정 ---------- */
+  // 아이디는 화면에서만 쓰고, 로그인은 아이디로 만든 내부 주소로 해요 (이메일 필요 없음)
+  const coachEmail = (id) => `c-${id}@coaches.keeperlab.co.kr`;
+  const ID_RE = /^[a-z0-9_]{4,20}$/;
+  let fb = null, me = { uid: null, coach: null }, posts = [], notices = [], coaches = [];
+  let cat = "all", search = "", page = 1, opened = false;
   const boot = () => KLFB.boot().then((x) => (fb = x));
-
-  async function load() {
-    if (!KLFB.ready()) { root.innerHTML = `<div class="fb-empty">대화방 준비 중이에요.</div>`; return; }
-    if (!loaded) root.innerHTML = `<div class="fb-empty">불러오는 중…</div>`;
-    try {
-      await boot();
-      const snap = await fb.db.collection("talk").orderBy("createdAt", "desc").limit(300).get();
-      posts = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      try { // 공지 (관리자만 쓰고, 고른 탭에만 보여요)
-        const ns = await fb.db.collection("talkNotice").orderBy("createdAt", "desc").get();
-        notices = ns.docs.map((d) => ({ id: d.id, ...d.data() }));
-      } catch (e) { console.error(e); notices = []; }
-      loaded = true;
-      render();
-    } catch (e) {
-      console.error(e);
-      root.innerHTML = `<div class="fb-empty">글을 불러오지 못했어요. 새로고침해 주세요.</div>`;
+  const access = () => {
+    if (KLFB.isAdmin()) return "admin";
+    if (!me.coach) return me.uid && me.isCoachAccount ? "nodata" : "none";
+    return { approved: "coach", pending: "pending" }[me.coach.status] || "rejected";
+  };
+  async function refreshMe() {
+    const u = fb && fb.auth.currentUser;
+    me = { uid: u ? u.uid : null, coach: null, isCoachAccount: !!(u && /@coaches\.keeperlab\.co\.kr$/.test(u.email || "")) };
+    if (me.isCoachAccount) {
+      try { const d = await fb.db.doc(`coaches/${u.uid}`).get(); me.coach = d.exists ? d.data() : null; } catch (e) { console.error(e); }
     }
   }
 
+  async function load() {
+    if (!KLFB.ready()) { root.innerHTML = `<div class="fb-empty">대화방 준비 중이에요.</div>`; return; }
+    if (!opened) root.innerHTML = `<div class="fb-empty">불러오는 중…</div>`;
+    opened = true;
+    try {
+      await boot();
+      await refreshMe();
+      const a = access();
+      $("#talkWrite").hidden = !(a === "admin" || a === "coach");
+      if (a !== "admin" && a !== "coach") return renderGate(a);
+      const snap = await fb.db.collection("talk").orderBy("createdAt", "desc").limit(300).get();
+      posts = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      try {
+        const ns = await fb.db.collection("talkNotice").orderBy("createdAt", "desc").get();
+        notices = ns.docs.map((d) => ({ id: d.id, ...d.data() }));
+      } catch (e) { console.error(e); notices = []; }
+      coaches = [];
+      if (a === "admin") {
+        try { coaches = (await fb.db.collection("coaches").get()).docs.map((d) => ({ uid: d.id, ...d.data() })); } catch (e) { console.error(e); }
+      }
+      render();
+    } catch (e) {
+      console.error(e);
+      root.innerHTML = `<div class="fb-empty">불러오지 못했어요. 새로고침해 주세요.</div>`;
+    }
+  }
+
+  /* ---------- 잠금 화면 (로그인 · 가입 신청) ---------- */
+  function renderGate(a) {
+    const msg = {
+      pending: `<h3>가입 신청을 확인하고 있어요</h3><p>${esc(me.coach ? me.coach.name : "")} 코치님, 관리자가 승인하면 바로 대화방을 볼 수 있어요. 조금만 기다려 주세요.</p>`,
+      rejected: `<h3>대화방을 이용할 수 없는 계정이에요</h3><p>가입이 승인되지 않았거나 이용이 중지됐어요. 궁금한 점은 카카오톡 채널로 문의해 주세요.</p>`,
+      nodata: `<h3>가입 정보가 없어요</h3><p>가입 신청이 끝나지 않았거나 삭제된 계정이에요. 카카오톡 채널로 문의해 주세요.</p>`,
+    }[a];
+    root.innerHTML = `
+      <div class="fb-bar"><button class="fb-admin-link" data-talk="admin">관리자</button></div>
+      <div class="talk-gate">
+        <div class="tg-lock" aria-hidden="true">🔒</div>
+        ${msg ? `${msg}<button class="btn btn-ghost btn-sm" data-talk="logout">로그아웃</button>` : `
+        <h3>승인된 GK 코치만 볼 수 있어요</h3>
+        <p>GK 코치 대화방은 KEEPER LAB이 확인한 골키퍼 코치들의 공간이에요.<br />가입 신청 후 관리자가 승인하면 글을 보고 쓸 수 있어요.</p>
+        <form class="form tg-login" id="talkLogin">
+          <label>아이디<input name="id" required autocomplete="username" autocapitalize="none" spellcheck="false" /></label>
+          <label>비밀번호<input name="pw" type="password" required autocomplete="current-password" /></label>
+          <label class="check"><input type="checkbox" name="keep" checked /> <span>로그인 유지</span></label>
+          <button class="btn btn-solid">로그인</button>
+        </form>
+        <div class="tg-join"><span>아직 회원이 아니라면</span><button class="btn btn-ghost btn-sm" data-talk="join">코치 가입 신청</button></div>
+        <p class="fb-help">아이디·비밀번호를 잊었다면 카카오톡 채널로 문의해 주세요.</p>`}
+      </div>`;
+  }
+
+  function joinForm() {
+    const body = openModal(`
+      <h3>코치 가입 신청</h3><div class="meta">관리자가 확인 후 승인하면 대화방을 이용할 수 있어요</div>
+      <form class="form" id="talkJoin">
+        <div class="form-row">
+          <label>아이디 (영문 소문자·숫자·_ 4~20자)<input name="id" required maxlength="20" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="예) keeper_yoo" /></label>
+          <label>이름<input name="name" required maxlength="20" placeholder="예) 유수영" /></label>
+        </div>
+        <div class="form-row">
+          <label>비밀번호 (6자 이상)<input name="pw" type="password" required minlength="6" maxlength="40" autocomplete="new-password" /></label>
+          <label>비밀번호 확인<input name="pw2" type="password" required minlength="6" maxlength="40" autocomplete="new-password" /></label>
+        </div>
+        <label>소속<input name="org" required maxlength="30" placeholder="예) OO FC U15, 프리랜서" /></label>
+        <label class="check"><input type="checkbox" name="agree" required /> <span>가입 확인을 위한 정보(이름 · 소속) 수집 및 이용에 동의합니다. 이름과 소속은 글쓴이로 표시돼요.</span></label>
+        <div class="form-actions"><button type="button" class="btn btn-ghost btn-sm" data-close>취소</button><button class="btn btn-solid btn-sm">가입 신청</button></div>
+      </form>`, true);
+    const f = $("#talkJoin", body);
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const val = (n) => f[n].value.trim();
+      const id = val("id").toLowerCase();
+      if (!ID_RE.test(id)) return toast("아이디는 영문 소문자 · 숫자 · _ 4~20자예요");
+      if (f.pw.value !== f.pw2.value) return toast("비밀번호가 서로 달라요");
+      const btn = $(".btn-solid", f); btn.disabled = true;
+      try {
+        await boot();
+        await fb.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        const cred = await fb.auth.createUserWithEmailAndPassword(coachEmail(id), f.pw.value);
+        await fb.db.doc(`coaches/${cred.user.uid}`).set({
+          id, name: val("name"), org: val("org"), status: "pending", createdAt: fb.FV.serverTimestamp(),
+        });
+        closeModal(); toast("가입 신청을 보냈어요. 승인되면 바로 이용할 수 있어요"); load();
+      } catch (err) {
+        console.error(err); btn.disabled = false;
+        const c = err.code || "";
+        toast(/email-already-in-use/.test(c) ? "이미 쓰고 있는 아이디예요" : /weak-password/.test(c) ? "비밀번호를 6자 이상으로 해주세요" : "가입 신청을 보내지 못했어요. 잠시 후 다시 해주세요");
+      }
+    });
+  }
+
+  /* ---------- 관리자: 가입 관리 ---------- */
+  function membersModal() {
+    const groups = [["pending", "승인 대기"], ["approved", "승인된 코치"], ["rejected", "거절 · 이용 중지"]];
+    const fmt = (ts) => (ts && ts.toDate ? ts.toDate().toLocaleDateString("ko-KR") : "");
+    openModal(`
+      <h3>코치 가입 관리</h3><div class="meta">승인된 코치만 대화방을 보고 쓸 수 있어요</div>
+      <div class="members">
+      ${groups.map(([st, label]) => {
+        const list = coaches.filter((c) => (c.status || "pending") === st);
+        return `<section><h4>${label} <span>${list.length}</span></h4>${list.length ? `<ul>${list.map((c) => `
+          <li>
+            <div class="mb-who"><b>${esc(c.name)}</b> <span>${esc(c.org || "")} · 아이디 ${esc(c.id || "")} · ${fmt(c.createdAt)} 신청</span></div>
+            <div class="mb-acts">
+              ${st !== "approved" ? `<button class="btn btn-solid btn-sm" data-mb="approved" data-uid="${c.uid}">승인</button>` : ""}
+              ${st !== "rejected" ? `<button class="btn btn-ghost btn-sm" data-mb="rejected" data-uid="${c.uid}">${st === "approved" ? "이용 중지" : "거절"}</button>` : ""}
+              <button class="btn btn-ghost btn-sm fb-danger" data-mb="delete" data-uid="${c.uid}">가입 정보 삭제</button>
+            </div>
+          </li>`).join("")}</ul>` : `<p class="fb-help">없어요.</p>`}</section>`;
+      }).join("")}
+      </div>`, true);
+  }
+  modalBody.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-mb]"); if (!b || !KLFB.isAdmin()) return;
+    const uid = b.dataset.uid, act = b.dataset.mb;
+    if (act === "delete" && b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "한 번 더 누르면 삭제"; return; }
+    b.disabled = true;
+    try {
+      if (act === "delete") await fb.db.doc(`coaches/${uid}`).delete();
+      else await fb.db.doc(`coaches/${uid}`).update({ status: act });
+      toast({ approved: "승인했어요", rejected: "처리했어요", delete: "삭제했어요" }[act]);
+      await load(); membersModal();
+    } catch (err) { console.error(err); b.disabled = false; toast("처리하지 못했어요"); }
+  });
+
+  /* ---------- 게시판 ---------- */
   function render() {
     const q = search.toLowerCase();
     const found = posts.filter((p) => (cat === "all" || p.cat === cat)
@@ -74,10 +194,11 @@
     if (page > pages) page = pages;
     const shown = found.slice((page - 1) * PER_PAGE, page * PER_PAGE);
     const admin = KLFB.isAdmin();
+    const waiting = coaches.filter((c) => (c.status || "pending") === "pending").length;
     root.innerHTML = `
       <div class="fb-bar">${admin
-        ? `<span class="fb-admin-on">관리자 모드 · 모든 글 삭제 가능</span><button class="btn btn-ghost btn-sm" data-talk="out">관리자 나가기</button>`
-        : `<button class="fb-admin-link" data-talk="admin">관리자</button>`}</div>
+        ? `<span class="fb-admin-on">관리자 모드</span><button class="btn btn-solid btn-sm" data-talk="members">가입 관리${waiting ? ` · 대기 ${waiting}` : ""}</button><button class="btn btn-ghost btn-sm" data-talk="out">관리자 나가기</button>`
+        : `<span class="talk-me">${esc(me.coach.name)}${me.coach.org ? ` (${esc(me.coach.org)})` : ""} 코치님</span><button class="btn btn-ghost btn-sm" data-talk="logout">로그아웃</button>`}</div>
       <div class="chips talk-cats" role="tablist" aria-label="말머리">
         ${["all", ...CATS].map((c) => `<button class="chip ${c === cat ? "is-active" : ""}" data-cat="${esc(c)}" role="tab" aria-selected="${c === cat}">${c === "all" ? "전체" : esc(c)}</button>`).join("")}
       </div>
@@ -105,7 +226,7 @@
         ${Array.from({ length: pages }, (_, i) => i + 1).map((n) => `<button class="fb-pg${n === page ? " is-on" : ""}" data-pg="${n}">${n}</button>`).join("")}
         <button class="fb-pg" data-pg="${page + 1}" ${page === pages ? "disabled" : ""} aria-label="다음 페이지">›</button>
       </nav>` : ""}
-      <p class="fb-help">연락처를 적을 때는 공개되는 글이라는 점을 꼭 생각해 주세요. 광고 · 비방 글은 관리자가 지울 수 있어요.</p>`;
+      <p class="fb-help">글은 승인된 코치끼리만 보여요. 광고 · 비방 글은 관리자가 지울 수 있어요.</p>`;
   }
 
   root.addEventListener("click", async (e) => {
@@ -124,11 +245,27 @@
     const row = e.target.closest("[data-post]");
     if (row) return openPost(row.dataset.post);
     const b = e.target.closest("[data-talk]"); if (!b) return;
-    if (b.dataset.talk === "clear") { search = ""; page = 1; return render(); }
-    if (b.dataset.talk === "admin") return KLFB.adminLogin({ openModal: (h) => openModal(h), closeModal, toast });
-    if (b.dataset.talk === "out") { await KLFB.signOut(); toast("관리자 모드를 나왔어요"); }
+    const t = b.dataset.talk;
+    if (t === "clear") { search = ""; page = 1; return render(); }
+    if (t === "admin") return KLFB.adminLogin({ openModal: (h) => openModal(h), closeModal, toast });
+    if (t === "join") return joinForm();
+    if (t === "members" && KLFB.isAdmin()) return membersModal();
+    if (t === "out" || t === "logout") { await KLFB.signOut(); toast(t === "out" ? "관리자 모드를 나왔어요" : "로그아웃했어요"); }
   });
-  root.addEventListener("submit", (e) => {
+  root.addEventListener("submit", async (e) => {
+    const lf = e.target.closest("#talkLogin");
+    if (lf) {
+      e.preventDefault();
+      const id = lf.id.value.trim().toLowerCase();
+      if (!ID_RE.test(id)) return toast("아이디를 확인해 주세요");
+      const btn = $(".btn-solid", lf); btn.disabled = true;
+      try { await KLFB.signIn(coachEmail(id), lf.pw.value, { remember: lf.keep.checked }); }
+      catch (err) {
+        btn.disabled = false;
+        toast(/too-many/.test(err.code || "") ? "여러 번 틀려서 잠시 막혔어요. 몇 분 뒤에 다시 해주세요" : "아이디 또는 비밀번호가 맞지 않아요");
+      }
+      return;
+    }
     const f = e.target.closest(".talk-search"); if (!f) return;
     e.preventDefault(); search = f.q.value.trim(); page = 1; render();
   });
@@ -175,9 +312,9 @@
 
   function writeForm(post) {
     const v = (k) => esc(post ? post[k] || "" : "");
-    const admin = KLFB.isAdmin(); // 관리자는 비밀번호 없이 쓰고 고쳐요
+    const admin = KLFB.isAdmin();
     const body = openModal(`
-      <h3>${post ? "글 수정" : "글쓰기"}</h3><div class="meta">GK 코치 대화방</div>
+      <h3>${post ? "글 수정" : "글쓰기"}</h3><div class="meta">GK 코치 대화방 · ${admin ? "운영자로 올라가요" : `${esc(me.coach.name)}${me.coach.org ? ` (${esc(me.coach.org)})` : ""} 이름으로 올라가요`}</div>
       ${admin && !post ? modeTabs("post") : ""}
       <form class="form" id="talkForm">
         <div class="form-row">
@@ -191,14 +328,11 @@
         <p class="form-hint talk-tip"></p>
         <label>제목<input name="title" required maxlength="80" value="${v("title")}" /></label>
         <label>내용<textarea name="body" required maxlength="5000" rows="12">${v("body")}</textarea></label>
-        <label>연락 방법 (선택 · 모두에게 공개돼요)<input name="contact" maxlength="80" value="${v("contact")}" placeholder="예) 카카오 오픈채팅 링크, 이메일" /></label>
-        ${post ? "" : `<div class="form-row">
-          <label>이름<input name="author" required maxlength="20" value="${esc(admin ? "KEEPER LAB" : localStorage.getItem("kl_name") || "")}" placeholder="예) 유수영" /></label>
-          <label>소속 (선택)<input name="org" maxlength="30" value="${esc(admin ? "" : localStorage.getItem("kl_org") || "")}" placeholder="예) KEEPER LAB" /></label>
-        </div>`}
-        ${admin
-          ? `<p class="form-hint">관리자 모드라 비밀번호 없이 올라가요. 글에 <b>운영자</b> 표시가 붙어요.</p>`
-          : `<label>${post ? "글 비밀번호 (쓸 때 정한 비밀번호)" : "글 비밀번호 (수정 · 삭제할 때 필요해요, 4자 이상)"}<input name="pw" type="password" required minlength="4" maxlength="30" autocomplete="new-password" /></label>`}
+        <label>연락 방법 (선택 · 승인된 코치들에게 보여요)<input name="contact" maxlength="80" value="${v("contact")}" placeholder="예) 카카오 오픈채팅 링크, 이메일" /></label>
+        ${admin && !post ? `<div class="form-row">
+          <label>이름<input name="author" required maxlength="20" value="KEEPER LAB" /></label>
+          <label>소속 (선택)<input name="org" maxlength="30" /></label>
+        </div>` : ""}
         <div class="form-actions"><button type="button" class="btn btn-ghost btn-sm" data-close>취소</button><button class="btn btn-solid btn-sm">${post ? "수정하기" : "올리기"}</button></div>
       </form>`, true);
     const f = $("#talkForm", body);
@@ -231,32 +365,18 @@
       if (!data.body) return toast("내용을 적어주세요");
       const btn = $(".btn-solid", f); btn.disabled = true;
       try {
-        await boot();
-        const batch = fb.db.batch();
         if (!post) {
           const ref = fb.db.collection("talk").doc();
-          const author = val("author"), org = val("org");
-          if (admin) {
-            batch.set(ref, { ...data, author, org, byAdmin: true, createdAt: fb.FV.serverTimestamp() });
-          } else {
-            try { localStorage.setItem("kl_name", author); localStorage.setItem("kl_org", org); } catch {}
-            batch.set(ref, { ...data, author, org, createdAt: fb.FV.serverTimestamp() });
-            batch.set(fb.db.doc(`talkLock/${ref.id}`), { h: await hashPw(ref.id, val("pw")) });
-          }
-          await batch.commit();
+          if (admin) await ref.set({ ...data, author: val("author"), org: val("org"), byAdmin: true, createdAt: fb.FV.serverTimestamp() });
+          else await ref.set({ ...data, author: me.coach.name, org: me.coach.org || "", uid: me.uid, createdAt: fb.FV.serverTimestamp() });
           toast("글을 올렸어요");
           await load(); openPost(ref.id); // 창을 닫지 않고 바로 올린 글로 바꿔요
         } else {
-          if (!admin) batch.set(fb.db.doc(`talkUnlock/${post.id}`), { h: await hashPw(post.id, val("pw")), t: fb.FV.serverTimestamp() });
-          batch.update(fb.db.doc(`talk/${post.id}`), { ...data, updatedAt: fb.FV.serverTimestamp() });
-          await batch.commit();
+          await fb.db.doc(`talk/${post.id}`).update({ ...data, updatedAt: fb.FV.serverTimestamp() });
           toast("수정했어요");
           await load(); openPost(post.id);
         }
-      } catch (err) {
-        console.error(err); btn.disabled = false;
-        toast(post && /permission/.test(err.code || "") ? "비밀번호가 맞지 않아요" : "올리지 못했어요. 잠시 후 다시 해주세요");
-      }
+      } catch (err) { console.error(err); btn.disabled = false; toast("올리지 못했어요. 잠시 후 다시 해주세요"); }
     });
   }
   /* ---------- 공지 (관리자 전용) ---------- */
@@ -308,12 +428,14 @@
   });
 
   document.getElementById("talkWrite").addEventListener("click", () => {
-    if (!KLFB.ready()) return toast("대화방 준비 중이에요");
+    const a = KLFB.ready() ? access() : "none";
+    if (a !== "admin" && a !== "coach") return toast("승인된 코치만 글을 쓸 수 있어요");
     writeForm();
   });
 
   /* ---------- 글 보기 · 댓글 ---------- */
   let openId = null;
+  const mine = (o) => KLFB.isAdmin() || (o.uid && o.uid === me.uid);
   async function openPost(id) {
     const p = posts.find((x) => x.id === id); if (!p) return;
     openId = id;
@@ -330,121 +452,58 @@
         <div class="meta">${p.byAdmin ? `<i class="talk-official">운영자</i>` : ""}${esc(byline(p))} · ${when(p.createdAt)}${p.updatedAt ? " · 수정됨" : ""}</div>
         ${p.region || p.contact ? `<dl class="talk-info">${p.region ? `<dt>지역</dt><dd>${esc(p.region)}</dd>` : ""}${p.contact ? `<dt>연락</dt><dd>${esc(p.contact)}</dd>` : ""}</dl>` : ""}
         <div class="article talk-body">${paras(p.body)}</div>
-        <div class="talk-own" data-own>
-          ${admin
-            ? `<button class="btn btn-ghost btn-sm" data-admin-edit>수정</button><button class="btn btn-ghost btn-sm fb-danger" data-admin-del>삭제</button>`
-            : p.byAdmin ? "" : `<button class="btn btn-ghost btn-sm" data-own-act="edit">수정</button><button class="btn btn-ghost btn-sm" data-own-act="del">삭제</button>`}
-        </div>
+        ${mine(p) ? `<div class="talk-own"><button class="btn btn-ghost btn-sm" data-post-edit>수정</button><button class="btn btn-ghost btn-sm fb-danger" data-post-del>삭제</button></div>` : ""}
         <section class="talk-comments">
           <h4>댓글 ${comments.length}</h4>
           ${comments.length ? `<ul>${comments.map((c) => `
             <li data-cid="${c.id}">
               <div class="tc-head">${c.byAdmin ? `<i class="talk-official">운영자</i>` : ""}<b>${esc(byline(c))}</b><span>${when(c.createdAt)}</span>
-                <button class="tc-del" data-cdel="${c.id}">삭제</button></div>
+                ${mine(c) ? `<button class="tc-del" data-cdel="${c.id}">삭제</button>` : ""}</div>
               <div class="tc-body">${esc(c.body).replace(/\n/g, "<br>")}</div>
             </li>`).join("")}</ul>` : `<p class="fb-help">첫 댓글을 남겨보세요.</p>`}
-          <form class="form talk-cform${admin ? " is-admin" : ""}" id="talkCForm">
-            <textarea name="body" required maxlength="1000" rows="3" placeholder="댓글을 적어주세요"></textarea>
-            <div class="talk-cfields">
-              <input name="author" required maxlength="20" value="${esc(admin ? "KEEPER LAB" : localStorage.getItem("kl_name") || "")}" placeholder="이름" aria-label="이름" />
-              <input name="org" maxlength="30" value="${esc(localStorage.getItem("kl_org") || "")}" placeholder="소속 (선택)" aria-label="소속" />
-              ${admin ? "" : `<input name="pw" type="password" required minlength="4" maxlength="30" placeholder="비밀번호 (삭제용)" aria-label="댓글 비밀번호" autocomplete="new-password" />`}
-              <button class="btn btn-solid btn-sm">댓글 달기</button>
-            </div>
+          <form class="form talk-cform" id="talkCForm">
+            <textarea name="body" required maxlength="1000" rows="3" placeholder="${admin ? "운영자로 댓글을 달아요" : "댓글을 적어주세요"}"></textarea>
+            <div class="talk-cfields"><button class="btn btn-solid btn-sm">댓글 달기</button></div>
           </form>
         </section>
       </div>`, true);
 
     $("#talkCForm", modalBody).addEventListener("submit", async (e) => {
       e.preventDefault();
-      const f = e.target, val = (n) => f[n].value.trim();
-      if (!val("body")) return;
-      const btn = $(".btn-solid", f); btn.disabled = true;
+      const text = e.target.body.value.trim();
+      if (!text) return;
+      const btn = $(".btn-solid", e.target); btn.disabled = true;
       try {
-        const ref = fb.db.collection(`talk/${id}/comments`).doc();
-        const batch = fb.db.batch();
-        if (KLFB.isAdmin()) {
-          batch.set(ref, { author: val("author"), org: val("org"), body: val("body"), byAdmin: true, createdAt: fb.FV.serverTimestamp() });
-        } else {
-          batch.set(ref, { author: val("author"), org: val("org"), body: val("body"), createdAt: fb.FV.serverTimestamp() });
-          batch.set(fb.db.doc(`talkLock/${id}__${ref.id}`), { h: await hashPw(`${id}__${ref.id}`, val("pw")) });
-        }
-        await batch.commit();
-        try { localStorage.setItem("kl_name", val("author")); localStorage.setItem("kl_org", val("org")); } catch {}
+        const col = fb.db.collection(`talk/${id}/comments`);
+        if (KLFB.isAdmin()) await col.add({ author: "KEEPER LAB", org: "", body: text, byAdmin: true, createdAt: fb.FV.serverTimestamp() });
+        else await col.add({ author: me.coach.name, org: me.coach.org || "", body: text, uid: me.uid, createdAt: fb.FV.serverTimestamp() });
         openPost(id);
       } catch (err) { console.error(err); btn.disabled = false; toast("댓글을 올리지 못했어요"); }
     });
   }
 
-  // 글/댓글 비밀번호 확인 칸 (창 안에서 바로)
-  function askPw(anchor, label, onOk) {
-    const old = $(".pw-ask", modalBody); if (old) old.remove();
-    anchor.insertAdjacentHTML("afterend", `<form class="pw-ask"><input type="password" required minlength="4" maxlength="30" placeholder="${label}" aria-label="${label}" /><button class="btn btn-solid btn-sm">확인</button><button type="button" class="btn btn-ghost btn-sm" data-pw-cancel>취소</button></form>`);
-    const f = $(".pw-ask", modalBody), input = $("input", f);
-    input.focus();
-    f.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const btn = $(".btn-solid", f); btn.disabled = true;
-      try { await onOk(input.value); } catch (err) {
-        console.error(err); btn.disabled = false;
-        toast(/permission/.test(err.code || "") ? "비밀번호가 맞지 않아요" : "처리하지 못했어요. 잠시 후 다시 해주세요");
-      }
-    });
-    $("[data-pw-cancel]", f).addEventListener("click", () => f.remove());
-  }
-
   modalBody.addEventListener("click", async (e) => {
     if (!openId || !$(".talk-view", modalBody)) return;
     const id = openId, p = posts.find((x) => x.id === id);
-    const own = e.target.closest("[data-own-act]");
-    if (own && own.dataset.ownAct === "edit") {
-      return askPw($("[data-own]", modalBody), "글 비밀번호", async (pw) => {
-        // 비밀번호가 맞는지 먼저 확인 (내용은 그대로 다시 저장)
-        const batch = fb.db.batch();
-        batch.set(fb.db.doc(`talkUnlock/${id}`), { h: await hashPw(id, pw), t: fb.FV.serverTimestamp() });
-        batch.update(fb.db.doc(`talk/${id}`), { title: p.title });
-        await batch.commit();
-        writeForm(p);
-        const f = $("#talkForm", modalBody); if (f) f.pw.value = pw;
-      });
-    }
-    if (own && own.dataset.ownAct === "del") {
-      return askPw($("[data-own]", modalBody), "글 비밀번호 (삭제)", async (pw) => {
-        const batch = fb.db.batch();
-        batch.set(fb.db.doc(`talkUnlock/${id}`), { h: await hashPw(id, pw), t: fb.FV.serverTimestamp() });
-        batch.delete(fb.db.doc(`talk/${id}`));
-        batch.delete(fb.db.doc(`talkLock/${id}`));
-        await batch.commit();
-        closeModal(); toast("삭제했어요"); load();
-      });
-    }
-    if (e.target.closest("[data-admin-edit]") && KLFB.isAdmin()) return writeForm(p);
-    if (e.target.closest("[data-admin-del]")) {
-      const b = e.target.closest("[data-admin-del]");
-      if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "한 번 더 누르면 삭제"; return; }
-      await fb.db.doc(`talk/${id}`).delete();
-      closeModal(); toast("삭제했어요"); load();
+    if (e.target.closest("[data-post-edit]") && mine(p)) return writeForm(p);
+    const del = e.target.closest("[data-post-del]");
+    if (del && mine(p)) {
+      if (del.dataset.sure !== "1") { del.dataset.sure = "1"; del.textContent = "한 번 더 누르면 삭제"; return; }
+      try { await fb.db.doc(`talk/${id}`).delete(); closeModal(); toast("삭제했어요"); load(); }
+      catch (err) { console.error(err); toast("삭제하지 못했어요"); }
       return;
     }
     const cd = e.target.closest("[data-cdel]");
     if (cd) {
-      const cid = cd.dataset.cdel;
-      if (KLFB.isAdmin()) { await fb.db.doc(`talk/${id}/comments/${cid}`).delete(); toast("댓글을 지웠어요"); return openPost(id); }
-      return askPw(cd.closest("li"), "댓글 비밀번호", async (pw) => {
-        const key = `${id}__${cid}`;
-        const batch = fb.db.batch();
-        batch.set(fb.db.doc(`talkUnlock/${key}`), { h: await hashPw(key, pw), t: fb.FV.serverTimestamp() });
-        batch.delete(fb.db.doc(`talk/${id}/comments/${cid}`));
-        batch.delete(fb.db.doc(`talkLock/${key}`));
-        await batch.commit();
-        toast("댓글을 지웠어요"); openPost(id);
-      });
+      if (cd.dataset.sure !== "1") { cd.dataset.sure = "1"; cd.textContent = "한 번 더 누르면 삭제"; return; }
+      try { await fb.db.doc(`talk/${id}/comments/${cd.dataset.cdel}`).delete(); toast("댓글을 지웠어요"); openPost(id); }
+      catch (err) { console.error(err); toast("지우지 못했어요"); }
     }
   });
   new MutationObserver(() => { if (!modal.open) openId = null; }).observe(modal, { attributes: true, attributeFilter: ["open"] });
 
-  /* 대화방 페이지를 열 때 불러와요 */
-  KLFB.onAuth(() => { if (loaded) render(); });
+  /* 대화방 페이지를 열 때 불러와요 · 로그인 상태가 바뀌면 다시 그려요 */
+  KLFB.onAuth(() => { if (opened) load(); });
   const maybeLoad = () => { if (location.hash.startsWith("#/talk")) load(); };
   window.addEventListener("hashchange", maybeLoad);
   maybeLoad();

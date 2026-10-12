@@ -144,7 +144,7 @@
     const btn = f.querySelector("button"); btn.disabled = true;
     try {
       await boot();
-      await fb.auth.signInWithEmailAndPassword(playerEmail(f.dataset.pid), playerPass(pin));
+      await KLFB.signIn(playerEmail(f.dataset.pid), playerPass(pin));
       f.pin.value = "";
       viewingPid = f.dataset.pid;
       await showMine(viewingPid);
