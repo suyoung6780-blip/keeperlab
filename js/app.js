@@ -105,7 +105,9 @@
   })();
 
   /* ---------- pages (hash router: #/shop, #/training …) ---------- */
-  const PAGES = ["home", "about", "shop", "training", "coach", "archive", "tactics", "talk"];
+  // 샵은 잠시 닫아뒀어요 — 다시 열려면 아래 SHOP_VISIBLE을 true로, 메뉴(index.html)에 SHOP 링크를 다시 넣어주세요
+  const SHOP_VISIBLE = false;
+  const PAGES = ["home", "about", ...(SHOP_VISIBLE ? ["shop"] : []), "training", "coach", "archive", "tactics", "talk"];
   const TITLES = { home: "", about: "소개", shop: "샵", training: "트레이닝", coach: "FOR COACH", archive: "아카이브", tactics: "택티컬 패드", talk: "GK 코치 대화방" };
   const COACH_PAGES = ["coach", "archive", "tactics", "talk"]; // 메뉴에서 FOR COACH 아래에 묶여요
   // FOR COACH 펼침 메뉴: 무언가 누르면 닫고, 마우스가 메뉴 밖으로 나가면 다시 열릴 수 있게
@@ -145,7 +147,7 @@
     if (h && h !== "#" && !h.startsWith("#/")) return; // in-page anchors like #main
     const [id = "home", sub] = h.slice(2).split(/[/?]/).filter(Boolean);
     showPage(PAGES.includes(id) ? id : "home");
-    if (id === "shop") showShop(sub);
+    if (id === "shop" && SHOP_VISIBLE) showShop(sub);
   }
   window.addEventListener("hashchange", route);
 
