@@ -107,9 +107,11 @@
   /* ---------- pages (hash router: #/shop, #/training …) ---------- */
   // 샵은 잠시 닫아뒀어요 — 다시 열려면 아래 SHOP_VISIBLE을 true로, 메뉴(index.html)에 SHOP 링크를 다시 넣어주세요
   const SHOP_VISIBLE = false;
-  const PAGES = ["home", "about", ...(SHOP_VISIBLE ? ["shop"] : []), "training", "coach", "archive", "tactics", "talk"];
+  // FOR COACH(아카이브 · 대화방)도 잠시 닫아뒀어요 — 택티컬 패드만 메뉴에 있어요. 다시 열려면 COACH_VISIBLE을 true로, 메뉴(index.html)도 되돌려 주세요
+  const COACH_VISIBLE = false;
+  const PAGES = ["home", "about", ...(SHOP_VISIBLE ? ["shop"] : []), "training", ...(COACH_VISIBLE ? ["coach", "archive", "talk"] : []), "tactics"];
   const TITLES = { home: "", about: "소개", shop: "샵", training: "트레이닝", coach: "FOR COACH", archive: "아카이브", tactics: "택티컬 패드", talk: "GK 코치 대화방" };
-  const COACH_PAGES = ["coach", "archive", "tactics", "talk"]; // 메뉴에서 FOR COACH 아래에 묶여요
+  const COACH_PAGES = COACH_VISIBLE ? ["coach", "archive", "tactics", "talk"] : []; // 메뉴에서 FOR COACH 아래에 묶여요
   // FOR COACH 펼침 메뉴: 무언가 누르면 닫고, 마우스가 메뉴 밖으로 나가면 다시 열릴 수 있게
   $$(".nav-drop").forEach((drop) => {
     drop.addEventListener("click", (e) => {
@@ -120,7 +122,7 @@
     drop.addEventListener("mouseleave", () => drop.classList.remove("is-shut"));
   });
   // FOR COACH 안의 세 페이지 위쪽에 작은 이동 탭
-  ["archive", "tactics", "talk"].forEach((id) => {
+  if (COACH_VISIBLE) ["archive", "tactics", "talk"].forEach((id) => {
     const sec = document.getElementById(id); if (!sec) return;
     sec.insertAdjacentHTML("afterbegin", `<nav class="coach-tabs" aria-label="FOR COACH">
       <a href="#/coach" class="ct-home">FOR COACH</a>
@@ -146,6 +148,7 @@
     if (h.startsWith("#b=")) { showPage("tactics"); openFromHash(); return; }
     if (h && h !== "#" && !h.startsWith("#/")) return; // in-page anchors like #main
     const [id = "home", sub] = h.slice(2).split(/[/?]/).filter(Boolean);
+    if (!COACH_VISIBLE && ["coach", "archive", "talk"].includes(id)) { showPage("tactics"); return; } // 예전 주소는 패드로
     showPage(PAGES.includes(id) ? id : "home");
     if (id === "shop" && SHOP_VISIBLE) showShop(sub);
   }
@@ -1047,8 +1050,41 @@
   $("#redoBtn").addEventListener("click", () => { if (needPad()) { pad.redo(); renderSegs(); } });
   $("#clearBtn").addEventListener("click", () => { if (needPad()) pad.clear(); });
   $("#playBtn").addEventListener("click", () => {
-    if (!needPad()) return;
+    if (!needPad() || pad.isRecording) return;
     if (!pad.play()) toast("선수나 공을 누르고 ＋ 다음 위치를 눌러, 움직일 순서를 먼저 만들어 주세요");
+  });
+
+  // 이미지 · 영상 저장 (휴대폰은 공유 창 → 사진에 저장, 컴퓨터는 다운로드)
+  const fileStamp = () => { const d = new Date(), p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; };
+  async function saveFile(blob, name) {
+    const file = new File([blob], name, { type: blob.type });
+    const mobile = matchMedia("(pointer: coarse)").matches;
+    if (mobile && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file] }); return; } catch (e) { if (e.name === "AbortError") return; }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement("a"), { href: url, download: name });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast("저장했어요 · 다운로드 폴더를 확인해 주세요");
+  }
+  $("#shotBtn").addEventListener("click", async () => {
+    if (!needPad() || pad.isRecording) return;
+    if (pad.isEmpty()) return toast("먼저 보드에 선수나 선을 놓아주세요");
+    const blob = await pad.snapshot();
+    if (blob) saveFile(blob, `KEEPERLAB-보드-${fileStamp()}.png`);
+  });
+  $("#recBtn").addEventListener("click", async () => {
+    if (!needPad() || pad.isRecording) return;
+    if (!pad.canRecord()) return toast("이 브라우저는 영상 저장을 지원하지 않아요. 크롬이나 사파리 최신 버전에서 해주세요");
+    const job = pad.record();
+    if (!job) return toast("선수나 공을 누르고 ＋ 다음 위치를 눌러, 움직일 순서를 먼저 만들어 주세요");
+    const btn = $("#recBtn");
+    btn.disabled = true; btn.textContent = "● 녹화 중…";
+    toast("재생하면서 녹화하고 있어요. 끝날 때까지 기다려 주세요");
+    const blob = await job;
+    btn.disabled = false; btn.textContent = "영상 저장";
+    saveFile(blob, `KEEPERLAB-보드-${fileStamp()}.${blob.type.includes("mp4") ? "mp4" : "webm"}`);
   });
 
   document.addEventListener("keydown", (e) => {

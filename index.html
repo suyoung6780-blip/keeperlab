@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
   <link rel="icon" href="assets/favicon.png" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=20261124" />
 </head>
 <body>
   <a class="skip" href="#main">본문으로 건너뛰기</a>
@@ -30,14 +30,7 @@
       <a href="#/" data-nav="home">MAIN</a>
       <a href="#/about" data-nav="about">ABOUT</a>
       <a href="#/training" data-nav="training">TRAINING</a>
-      <div class="nav-drop">
-        <a href="#/coach" data-nav="coach" aria-haspopup="true">FOR COACH</a>
-        <div class="nav-sub" role="menu" aria-label="FOR COACH">
-          <a href="#/archive" role="menuitem"><b>ARCHIVE</b><span>자료 · 영상 · 논문</span></a>
-          <a href="#/tactics" role="menuitem"><b>TACTICAL</b><span>택티컬 패드</span></a>
-          <a href="#/talk" role="menuitem"><b>TALK</b><span>GK 코치 대화방</span></a>
-        </div>
-      </div>
+      <a href="#/tactics" data-nav="tactics">TACTICAL</a>
     </nav>
   </header>
 
@@ -50,10 +43,7 @@
       <a href="#/"><b>MAIN</b><span>메인</span></a>
       <a href="#/about"><b>ABOUT</b><span>키퍼랩 소개</span></a>
       <a href="#/training"><b>TRAINING</b><span>골키퍼 레슨</span></a>
-      <a href="#/coach"><b>FOR COACH</b><span>코치를 위한 공간</span></a>
-      <a href="#/archive" class="side-sub"><b>ARCHIVE</b><span>자료 · 영상 · 논문</span></a>
-      <a href="#/tactics" class="side-sub"><b>TACTICAL</b><span>택티컬 패드</span></a>
-      <a href="#/talk" class="side-sub"><b>TALK</b><span>GK 코치 대화방</span></a>
+      <a href="#/tactics"><b>TACTICAL</b><span>택티컬 패드</span></a>
     </nav>
   </aside>
 
@@ -70,7 +60,7 @@
           <h1 class="hh-tag"><span>BORN</span> <span>TO SAVE</span></h1>
           <div class="hh-cta">
             <a href="#/training" class="btn btn-solid btn-sm">TRAINING</a>
-            <a href="#/coach" class="btn btn-ghost btn-sm">FOR COACH</a>
+            <a href="#/tactics" class="btn btn-ghost btn-sm">TACTICAL PAD</a>
           </div>
         </div>
       </div>
@@ -295,7 +285,7 @@
     <!-- 05 TACTICAL PAD -->
     <section class="section page tactics" data-page="tactics" id="tactics" hidden>
       <header class="sec-head">
-        <span class="sec-num">05</span>
+        <span class="sec-num">04</span>
         <div>
           <p class="sec-kicker">Coaches' Tactical Pad</p>
           <h2 class="sec-title">그리고, 공유하고,<br />서로 배우는 보드</h2>
@@ -316,6 +306,9 @@
           <button class="tool tool-text" id="fullBtn" title="전체화면으로 크게 만들기 (ESC로 나가기)">⛶ 전체화면</button>
           <span class="bar-grow"></span>
           <button class="tool tool-text" id="clearBtn">전체 지우기</button>
+          <span class="bar-sep"></span>
+          <button class="tool tool-text" id="shotBtn" title="지금 보이는 보드를 사진(PNG)으로 저장">이미지 저장</button>
+          <button class="tool tool-text" id="recBtn" title="움직임을 처음부터 재생하면서 영상(MP4)으로 저장">영상 저장</button>
           <button class="btn btn-solid btn-sm" id="saveBoardBtn">저장 &amp; 공유</button>
         </div>
         <div class="pad-stage" id="padStage">
@@ -367,7 +360,7 @@
           <div><dt>문의</dt><dd><a href="https://pf.kakao.com/_yPxaxiX/chat" target="_blank" rel="noopener noreferrer">카카오톡 채널</a> · 인스타그램 DM <a href="https://www.instagram.com/keeper1ab/" target="_blank" rel="noopener noreferrer">@keeper1ab</a></dd></div>
         </dl>
         <nav class="ft-links" aria-label="푸터 메뉴">
-          <a href="#/about">브랜드 소개</a><a href="#/training">트레이닝</a><a href="#/coach">FOR COACH</a><a href="#/archive">아카이브</a><a href="#/tactics">택티컬 패드</a><a href="#/talk">코치 대화방</a>
+          <a href="#/about">브랜드 소개</a><a href="#/training">트레이닝</a><a href="#/tactics">택티컬 패드</a>
         </nav>
       </div>
       <div class="ft-contact">
@@ -415,10 +408,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="js/store.js"></script>
-  <script src="js/tactics3d.js"></script>
+  <script src="js/tactics3d.js?v=20261124"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/kl-firebase.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=20261124"></script>
   <script src="js/feedback.js"></script>
   <script src="js/talk.js"></script>
 </body>

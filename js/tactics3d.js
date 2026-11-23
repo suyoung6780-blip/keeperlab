@@ -398,7 +398,7 @@
     run:        { n: "달리기", g: "준비·이동", sp: [0.22, 0], hd: -0.2, la: [0.6, 0.1], le: -1.4, ra: [-0.8, -0.1], re: -1.35, ll: [-0.95, 0.02], lk: 0.8, rl: [0.4, -0.02], rk: 1.3 },
     jump:       { n: "크로스 자세", g: "준비·이동", air: 0.45, sp: [0.04, 0], hd: -0.15, la: [-2.8, 0.14], le: -0.2, ra: [-2.8, -0.14], re: -0.2, ll: [-1.45, 0.06], lk: 1.75, rl: [0.08, -0.03], rk: 0.35 },
 
-    catch_low:  { n: "땅볼 · 서서", g: "캐칭", sp: [1.12, 0], hd: -0.85, la: [-1.25, -0.06], le: -0.18, ra: [-1.25, 0.06], re: -0.18, ll: [-0.45, 0.04], lk: 0.6, rl: [-0.45, -0.04], rk: 0.6 },
+    catch_low:  { n: "땅볼 캐칭", g: "캐칭", sp: [1.12, 0], hd: -0.85, la: [-1.25, -0.06], le: -0.18, ra: [-1.25, 0.06], re: -0.18, ll: [-0.45, 0.04], lk: 0.6, rl: [-0.45, -0.04], rk: 0.6 },
     catch_knee: { n: "땅볼 캐칭", g: "캐칭", sp: [1.05, 0], hd: -0.07, la: [-1.3, -0.12], le: -0.2, ra: [-1.3, 0.12], re: -0.2, ll: [-1.2, 0.12], lk: 1.6, rl: [-0.3, 0.32, 0.55], rk: 2.1 },
     catch_mid:  { n: "배 캐칭", g: "캐칭", sp: [1.0, 0], hd: -0.02, la: [-0.75, -0.04], le: [-2.15, -0.24], ra: [-0.75, 0.04], re: [-2.15, 0.24], ll: [-0.95, 0.1], lk: 1.4, rl: [-0.95, -0.1], rk: 1.4 },
     catch_high: { n: "얼굴 캐칭", g: "캐칭", sp: [0.1, 0], hd: -0.35, la: [-1.2, -0.25], le: -1.65, ra: [-1.2, 0.25], re: -1.65, ll: [-0.4, 0.08], lk: 0.65, rl: [-0.4, -0.08], rk: 0.65 },
@@ -407,8 +407,9 @@
     dive_mid:   { n: "미들 세이빙", g: "세이빙", air: 0.5, b: [0.08, 0, -1.38], sp: [0.08, 0.1], hd: -0.1, la: [-3.0, 0.08], le: -0.1, ra: [-2.85, -0.2], re: -0.18, ll: [-0.25, 0.08], lk: 0.42, rl: [-0.95, -0.04], rk: 1.25 },
     dive_high:  { n: "하이 세이빙", g: "세이빙", air: 0.95, b: [0, 0, -0.95], sp: [0, 0.16], hd: 0, la: [-3.05, 0.14], le: -0.08, ra: [-2.95, -0.12], re: -0.15, ll: [-0.12, 0.1], lk: 0.38, rl: [-1.0, -0.05], rk: 1.3 },
 
-    kblock:     { n: "블락", g: "1:1", sp: [0.38, 0], hd: -0.35, la: [-0.5, 0.75], le: -0.3, ra: [-0.5, -0.75], re: -0.3, ll: [-0.45, 0.95], lk: 1.0, rl: [0.1, -0.05], rk: 1.62 },
+    kblock:     { n: "덮치기", g: "1:1", sp: [0.38, 0], hd: -0.35, la: [-0.5, 0.75], le: -0.3, ra: [-0.5, -0.75], re: -0.3, ll: [-0.45, 0.95], lk: 1.0, rl: [0.1, -0.05], rk: 1.62 },
     spread:     { n: "X블락", g: "1:1", sp: [0.45, 0], hd: -0.45, la: [-0.5, 1.2], le: -0.15, ra: [-0.5, -1.2], re: -0.15, ll: [-0.4, 0.7], lk: 0.45, rl: [-0.4, -0.7], rk: 0.45 },
+    onevone:    { n: "1v1 자세", g: "1:1", sp: [0.5, 0], hd: -0.45, la: [-0.5, 1.0], le: -0.15, ra: [-0.5, -1.0], re: -0.15, ll: [-0.7, 0.6], lk: 1.2, rl: [-0.7, -0.6], rk: 1.2 },
     punch:      { n: "펀칭", g: "1:1", air: 0.4, sp: [0.02, 0], hd: -0.45, la: [-2.85, -0.14], le: -0.08, ra: [-2.85, 0.14], re: -0.08, ll: [-1.35, 0.05], lk: 1.6, rl: [0.02, -0.03], rk: 0.3 },
 
     throw:      { n: "오버스로우", g: "배급", b: [0, -0.55, 0], sp: [-0.05, 0.12], hd: 0.1, la: [-1.45, 0.3], le: -0.1, ra: [0.3, -1.45], re: [-0.15, -1.6], ll: [-0.6, 0.08], lk: 0.42, rl: [0.45, -0.08], rk: 0.4 },
@@ -425,8 +426,8 @@
     feed:       { n: "공 던져주기", g: "코치", sp: [0.3, 0], hd: -0.25, la: [-0.9, 0.2], le: -0.55, ra: [-0.85, -0.2], re: -0.55, ll: [-0.6, 0.08], lk: 0.65, rl: [0.25, -0.08], rk: 0.38 },
   };
   // 골키퍼 동작 (팔레트 순서)
-  const GK_POSES = ["set_low", "set", "set_high", "catch_high", "catch_mid", "catch_knee", "jump", "dive_low", "dive_mid", "dive_high", "gkpass", "kick", "roll", "throw", "kblock"];
-  const FIELD_POSES = ["stand", "run", "jockey", "gkpass", "shoot", "cross", "header", "jump"];
+  const GK_POSES = ["set_low", "set", "set_high", "sidestep", "catch_high", "catch_mid", "catch_low", "jump", "punch", "dive_low", "dive_mid", "dive_high", "onevone", "kblock", "spread", "gkpass", "kick", "roll", "throw"];
+  const FIELD_POSES = ["stand", "run", "jockey", "gkpass", "shoot", "cross", "header"];
   const COACH_POSES = ["stand", "point", "feed", "gkpass", "shoot", "run"];
   const POSE_LIST = { gk: GK_POSES, own: FIELD_POSES, opp: FIELD_POSES, coach: COACH_POSES };
   const BASE = { b: [0, 0, 0], sp: [0, 0], hd: 0, la: [0, 0], le: [0, 0], ra: [0, 0], re: [0, 0], ll: [0, 0], lk: 0, rl: [0, 0], rk: 0, air: 0 };
@@ -555,6 +556,214 @@
   }
 
   const FIG_BOX = new WeakMap(); // 클릭 판정용 화면 영역
+
+  /* ---------- 유니폼 색: 기본 → 팀 색(state.kits) → 선수 색(it.kit) 순서로 덮어씀 ---------- */
+  const KIT_PARTS = { shirt: "상의", shorts: "반바지", socks: "양말" };
+  const KIT_DEFAULT = {
+    gk: { shirt: "#f2c230", shorts: "#151515", socks: "#f2c230" },
+    own: { shirt: "#f4f4f2", shorts: "#151515", socks: "#f4f4f2" },
+    opp: { shirt: "#c8202f", shorts: "#f4f4f2", socks: "#c8202f" },
+    coach: { shirt: "#2e2e30", shorts: "#2e2e30", socks: "#2e2e30" },
+  };
+  const KIT_SWATCHES = ["#f2c230", "#c6f432", "#ff7a1a", "#ff5fa2", "#7b4fd6", "#4fc3f7", "#2f5fdc", "#1f9d55", "#c8202f", "#8a8f98", "#1b1b1b", "#f4f4f2"];
+  const isHex = (c) => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c);
+  function kitColors(it, kits) {
+    const d = KIT_DEFAULT[it.kind] || KIT_DEFAULT.own, t = (kits && kits[it.kind]) || {}, p = it.kit || {}, o = {};
+    Object.keys(KIT_PARTS).forEach((k) => { o[k] = isHex(p[k]) ? p[k] : isHex(t[k]) ? t[k] : d[k]; });
+    return o;
+  }
+
+  /* ---------- 3D 선수 (Mixamo 캐릭터) ----------
+     assets/gk3d 의 캐릭터를 자세마다 화면 각도에 맞춰 찍어서(스프라이트) 2D 레이어에 그려요.
+     자세는 poses.json (뼈마다 회전) — 불러오기 전이나 못 불러오면 예전 2D 그림으로 그려요. */
+  const GK3D = (() => {
+    const BASE = "assets/gk3d/";
+    let state = "idle", D = null, done;
+    const ready = new Promise((r) => { done = r; });
+    const models = {}, sprites = new Map();
+    let R3, scene, ocam;
+    const FIG_SIZE = 1.12; // 실제 키보다 조금 크게 (패드에서 잘 보이게)
+    const KIT3 = {
+      gk: { shirt: 0xf2c230, shorts: 0x151515, socks: 0xf2c230, gloves: true },
+      own: { shirt: 0xf4f4f2, shorts: 0x151515, socks: 0xf4f4f2 },
+      opp: { shirt: 0xc8202f, shorts: 0xf4f4f2, socks: 0xc8202f },
+      coach: { shirt: 0x2e2e30, shorts: 0x2e2e30, socks: 0x2e2e30 },
+    };
+    function load() {
+      if (state !== "idle") return ready;
+      state = "loading";
+      const img = (src) => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = BASE + src; });
+      Promise.all([
+        fetch(BASE + "model.json").then((r) => r.json()), fetch(BASE + "model.bin").then((r) => r.arrayBuffer()), fetch(BASE + "poses.json").then((r) => r.json()),
+        img("body.jpg"), img("body-n.jpg"), img("hair.png"),
+      ]).then(([meta, bin, poses, body, bodyN, hair]) => {
+        D = { meta, bin, poses, body, bodyN, hair };
+        buildShared();
+        state = "ready"; done(true);
+      }).catch(() => { state = "failed"; done(false); });
+      return ready;
+    }
+    // 공통 도형 (T자세로 굳힌 위치 · 노멀 · UV · 뼈 무게)
+    function buildShared() {
+      const { meta, bin } = D;
+      D.geos = meta.meshes.map((m) => {
+        const n = m.n, g = new T.BufferGeometry();
+        const qp = new Uint16Array(bin, m.pos, n * 3), pos = new Float32Array(n * 3);
+        for (let i = 0; i < n * 3; i++) { const k = i % 3; pos[i] = m.min[k] + qp[i] / 65535 * m.size[k]; }
+        const qn = new Int8Array(bin, m.nor, n * 4), nor = new Float32Array(n * 3);
+        for (let i = 0; i < n; i++) for (let k = 0; k < 3; k++) nor[i * 3 + k] = qn[i * 4 + k] / 127;
+        g.setAttribute("position", new T.BufferAttribute(pos, 3));
+        g.setAttribute("normal", new T.BufferAttribute(nor, 3));
+        g.setAttribute("uv", new T.BufferAttribute(new Uint16Array(bin, m.uv, n * 2), 2, true));
+        g.setAttribute("skinIndex", new T.BufferAttribute(new Uint8Array(bin, m.si, n * 4), 4));
+        g.setAttribute("skinWeight", new T.BufferAttribute(new Uint8Array(bin, m.sw, n * 4), 4, true));
+        if (m.idx >= 0) g.setIndex(new T.BufferAttribute(m.i32 ? new Uint32Array(bin, m.idx, m.ni) : new Uint16Array(bin, m.idx, m.ni), 1));
+        return { part: m.part, geo: g };
+      });
+      const tex = (im) => { const t = new T.Texture(im); t.flipY = false; t.encoding = T.sRGBEncoding; t.needsUpdate = true; return t; };
+      D.tBody = tex(D.body); D.tHair = tex(D.hair);
+      D.tN = new T.Texture(D.bodyN); D.tN.flipY = false; D.tN.needsUpdate = true;
+      R3 = new T.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+      R3.setPixelRatio(1); R3.outputEncoding = T.sRGBEncoding; R3.setClearColor(0x000000, 0);
+      scene = new T.Scene();
+      scene.add(new T.HemisphereLight(0xffffff, 0x4a5a48, 0.95));
+      const sun = new T.DirectionalLight(0xffffff, 0.95); sun.position.set(3, 6, 4); scene.add(sun);
+      ocam = new T.OrthographicCamera(-1, 1, 1, -1, 0.1, 40);
+    }
+    // 장갑: 손목보다 바깥쪽 손 전체를 흰색으로 (T자세 위치 기준)
+    function gloveTex(B) {
+      const body = D.geos.find((x) => x.part === "Body").geo;
+      const c = document.createElement("canvas"); c.width = D.body.width; c.height = D.body.height;
+      const g = c.getContext("2d"); g.drawImage(D.body, 0, 0);
+      const sides = ["Left", "Right"].map((L) => {
+        const w = B[L + "Hand"].getWorldPosition(V3()), ax = B[L + "HandMiddle1"].getWorldPosition(V3()).sub(w), len = ax.length();
+        return { w, ax: ax.normalize(), len };
+      });
+      const pos = body.attributes.position, uv = body.attributes.uv, v = V3(); // uv는 0~65535 정수로 저장돼 있음
+      const inHand = (i) => {
+        v.fromBufferAttribute(pos, i);
+        return sides.some((s) => { const d = v.clone().sub(s.w), al = d.dot(s.ax); return al > -s.len * 0.05 && d.sub(s.ax.clone().multiplyScalar(al)).length() < s.len * 1.6; });
+      };
+      g.fillStyle = g.strokeStyle = "#f4f4f4"; g.lineWidth = 2;
+      for (let t = 0; t + 2 < pos.count; t += 3) {
+        if (!inHand(t) || !inHand(t + 1) || !inHand(t + 2)) continue;
+        g.beginPath(); [t, t + 1, t + 2].forEach((q, k) => g[k ? "lineTo" : "moveTo"](uv.getX(q) / 65535 * c.width, uv.getY(q) / 65535 * c.height)); g.closePath(); g.fill(); g.stroke();
+      }
+      const tx = new T.CanvasTexture(c); tx.flipY = false; tx.encoding = T.sRGBEncoding;
+      return tx;
+    }
+    function model(kind) {
+      if (models[kind]) return models[kind];
+      const kit = KIT3[kind] || KIT3.own, meta = D.meta;
+      const root = new T.Group(), inner = new T.Group();
+      root.add(inner);
+      const bones = meta.bones.map((b) => { const o = new T.Bone(); o.name = b.n; o.position.fromArray(b.t); o.quaternion.fromArray(b.q); o.scale.fromArray(b.s); return o; });
+      meta.bones.forEach((b, i) => (b.p >= 0 ? bones[b.p] : inner).add(bones[i]));
+      inner.updateMatrixWorld(true);
+      const B = Object.fromEntries(bones.map((b) => [b.name, b]));
+      const skel = new T.Skeleton(bones);
+      const std = (o) => new T.MeshStandardMaterial(Object.assign({ skinning: true, roughness: 0.8, metalness: 0 }, o));
+      const skinMap = kit.gloves ? (D.glove || (D.glove = gloveTex(B))) : D.tBody;
+      const MAT = {
+        Body: std({ map: skinMap, normalMap: D.tN }),
+        Shirt: std({ color: kit.shirt, normalMap: D.tN }),
+        Shorts: std({ color: kit.shorts, normalMap: D.tN }),
+        Socks: std({ map: D.tBody, color: kit.socks }),
+        Shoes: std({ map: D.tBody, normalMap: D.tN }),
+        Hair: std({ map: D.tHair, transparent: true, alphaTest: 0.25 }),
+      };
+      D.geos.forEach(({ part, geo }) => {
+        const sm = new T.SkinnedMesh(geo, MAT[part] || MAT.Body);
+        sm.frustumCulled = false;
+        inner.add(sm); sm.bind(skel, new T.Matrix4());
+      });
+      inner.scale.setScalar(meta.unit * FIG_SIZE);
+      // 펀칭 주먹 장갑 (손가락 뼈가 없어서 따로 끼움)
+      const gm = new T.MeshStandardMaterial({ color: 0xf4f4f4, roughness: 0.55 }), cm = new T.MeshStandardMaterial({ color: 0x161616, roughness: 0.7 });
+      const fists = {};
+      ["Left", "Right"].forEach((L) => {
+        fists[L] = ["ball", "knuck", "thumb", "cuff"].map((nm) => {
+          const o = new T.Mesh(nm === "cuff" ? new T.CylinderGeometry(1, 1, 1, 18) : new T.SphereGeometry(1, 20, 14), nm === "cuff" ? cm : gm);
+          o.matrixAutoUpdate = false; o.visible = false; inner.add(o); return o;
+        });
+      });
+      return (models[kind] = { root, inner, bones, B, fists, kit, MAT });
+    }
+    const poseOf = (id, kind) => {
+      const P = D.poses;
+      if (P[id]) return id;
+      if (id === "catch_knee") return "catch_low"; // 땅볼 캐칭은 하나로 합침
+      if (P[RIG_ALIAS[id]]) return RIG_ALIAS[id];
+      return P[DEFAULT_POSE[kind]] ? DEFAULT_POSE[kind] : "stand";
+    };
+    function setPose(M, a, b, t) {
+      const pa = D.poses[a], pb = b ? D.poses[b] : null, q = new T.Quaternion(), qb = new T.Quaternion();
+      M.bones.forEach((bo, i) => {
+        q.fromArray(pa.q[i]);
+        if (pb && t > 0) q.slerp(qb.fromArray(pb.q[i]), t);
+        bo.quaternion.copy(q);
+      });
+      M.B.Hips.position.fromArray(pb && t > 0 ? pa.hp.map((v, k) => v + (pb.hp[k] - v) * t) : pa.hp);
+      const fp = (pb && t >= 0.5 ? pb : pa).fist;
+      ["Left", "Right"].forEach((L) => {
+        M.fists[L].forEach((o, k) => { o.visible = !!fp; if (fp) o.matrix.fromArray(fp[L][k]); });
+        M.B[L + "Hand"].scale.setScalar(fp ? 0.001 : M.kit.gloves ? 1.18 : 1);
+      });
+    }
+    // 그릴 범위(m, 발밑 기준): 왼쪽 · 오른쪽 · 위 · 아래
+    const SPAN = { l: 1.9, r: 1.9, t: 3.4, b: 0.6 };
+    const FLIP = new Set(["dive_mid"]);
+    // it: 선수, cam: 화면 카메라, ppm: 1m 당 픽셀 (실제 그릴 크기)
+    function sprite(it, cam, ppm, colors) {
+      if (state !== "ready") return null;
+      const bl = it._blend; // 재생 중: [앞 자세, 거울, 뒤 자세, 거울, 0~1]
+      let a = poseOf(bl ? bl[0] : it.pose || DEFAULT_POSE[it.kind], it.kind);
+      // Mixamo 미들 다이빙은 패드와 반대쪽으로 뛰어서 좌우를 뒤집어 씀
+      const eff = (id, m) => !!m !== FLIP.has(id);
+      const b0 = bl && bl[4] > 0.02 && bl[4] < 0.98 ? poseOf(bl[2], it.kind) : null;
+      const b = b0 && eff(a, bl[1]) === eff(b0, bl[3]) ? b0 : null;
+      const t = b ? Math.round(bl[4] * 20) / 20 : 0;
+      const mirror = bl ? (bl[4] >= 0.5 ? eff(poseOf(bl[2], it.kind), bl[3]) : eff(a, bl[1])) : eff(a, it.mirror);
+      if (bl && !b && bl[4] >= 0.5) a = poseOf(bl[2], it.kind);
+      const cq = cam.getWorldQuaternion(new T.Quaternion());
+      const px = Math.min(260, Math.max(24, Math.round(ppm / 4) * 4));
+      const rot = Math.round((it.rot || 0) * 60) / 60;
+      const col = colors || KIT_DEFAULT[it.kind] || KIT_DEFAULT.own;
+      const key = [it.kind, a, b, t, mirror ? 1 : 0, rot, cq.toArray().map((v) => v.toFixed(3)).join(","), px, col.shirt, col.shorts, col.socks].join("|");
+      let sp = sprites.get(key);
+      if (sp) return sp;
+      const M = model(it.kind);
+      M.MAT.Shirt.color.set(col.shirt); M.MAT.Shorts.color.set(col.shorts); M.MAT.Socks.color.set(col.socks);
+      setPose(M, a, b, t);
+      M.root.rotation.set(0, rot, 0);
+      M.root.scale.set(mirror ? -1 : 1, 1, 1);
+      scene.add(M.root);
+      M.root.updateMatrixWorld(true);
+      ocam.left = -SPAN.l; ocam.right = SPAN.r; ocam.top = SPAN.t; ocam.bottom = -SPAN.b;
+      ocam.quaternion.copy(cq);
+      ocam.position.copy(V3(0, 0, 20).applyQuaternion(cq));
+      ocam.updateProjectionMatrix(); ocam.updateMatrixWorld(true);
+      const w = Math.round((SPAN.l + SPAN.r) * px), h = Math.round((SPAN.t + SPAN.b) * px);
+      R3.setSize(w, h, false);
+      R3.render(scene, ocam);
+      scene.remove(M.root);
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      c.getContext("2d").drawImage(R3.domElement, 0, 0);
+      // 클릭 판정: 뼈 위치를 화면에 찍어서 상자 (단위 m, 발밑 기준, 오른쪽 · 아래가 +)
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      M.bones.forEach((bo) => {
+        const p = bo.getWorldPosition(V3()).project(ocam);
+        const sx = (p.x + 1) / 2 * (SPAN.l + SPAN.r) - SPAN.l, sy = SPAN.b - (p.y + 1) / 2 * (SPAN.t + SPAN.b);
+        x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy);
+      });
+      sp = { c, box: [x0 - 0.15, y0 - 0.2, x1 + 0.15, y1 + 0.12] };
+      if (sprites.size > 400) sprites.clear();
+      sprites.set(key, sp);
+      return sp;
+    }
+    return { load, ready, sprite, SPAN, get ok() { return state === "ready"; } };
+  })();
+
   function shade(hexStr, k) {
     const n = parseInt(hexStr.slice(1), 16);
     const f = (v) => Math.max(0, Math.min(255, Math.round(v * k)));
@@ -575,12 +784,14 @@
     };
     // 선수는 원근 왜곡 없이 그림: 발밑 위치만 실제 원근으로 잡고, 몸은 카메라 방향 기준으로 평행 투영
     // → 화면 어디로 드래그해도 같은 방향이면 같은 모습(얼굴·몸이 돌아가 보이지 않음)
+    let foot, ppm; // 발밑 화면 위치 · 1m 당 픽셀 (3D 선수 그릴 때)
     {
       const proj0 = proj;
       const R = V3().setFromMatrixColumn(cam.matrixWorld, 0).normalize(), U = V3().setFromMatrixColumn(cam.matrixWorld, 1).normalize();
       const gp = V3(it.x, 0, it.z), base = proj0(gp), br = proj0(gp.clone().add(R));
       const sc = Math.hypot(br[0] - base[0], br[1] - base[1]);
       proj = (v) => { const d = v.clone().sub(gp); return [base[0] + d.dot(R) * sc, base[1] - d.dot(U) * sc]; };
+      foot = base; ppm = sc;
     }
     const S = {};
     for (const k in J) S[k] = proj(J[k]);
@@ -605,6 +816,28 @@
       const b = FIG_BOX.get(it);
       FIG_BOX.set(it, [sh[0] + (b[0] - sh[0]) * k, sh[1] + (b[1] - sh[1]) * k, sh[0] + (b[2] - sh[0]) * k, sh[1] + (b[3] - sh[1]) * k, b[4]]);
     }
+    // 3D 캐릭터를 불러왔으면 그 사진으로
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const spr = GK3D.sprite(it, cam, ppm * k * dpr, kitColors(it, opts.kits));
+    if (spr) {
+      const SP = GK3D.SPAN;
+      g.fillStyle = "rgba(0,0,0,.28)";
+      g.beginPath(); g.ellipse(foot[0], foot[1], m * 0.34, m * 0.13, 0, 0, Math.PI * 2); g.fill();
+      g.drawImage(spr.c, foot[0] - SP.l * ppm, foot[1] - SP.t * ppm, (SP.l + SP.r) * ppm, (SP.t + SP.b) * ppm);
+      const [bx0, by0, bx1, by1] = spr.box.map((v) => v * ppm);
+      const at = (dx, dy) => [sh[0] + (foot[0] + dx - sh[0]) * k, sh[1] + (foot[1] + dy - sh[1]) * k];
+      const p0 = at(bx0, by0), p1 = at(bx1, by1);
+      FIG_BOX.set(it, [p0[0], p0[1], p1[0], p1[1], depth(J.hip)]);
+      if (opts.selected) {
+        g.globalAlpha = 1;
+        g.setLineDash([5, 4]); g.lineWidth = 2; g.strokeStyle = "#fff";
+        g.beginPath(); g.ellipse(foot[0], foot[1], m * 0.5, m * 0.2, 0, 0, Math.PI * 2); g.stroke();
+        g.setLineDash([]);
+      }
+      g.restore();
+      return;
+    }
+
     // 그림자
     g.fillStyle = "rgba(0,0,0,.28)";
     g.beginPath(); g.ellipse(sh[0], sh[1], m * 0.34, m * 0.13, 0, 0, Math.PI * 2); g.fill();
@@ -623,7 +856,7 @@
     }
 
     // 납작한 벡터 일러스트: 굵기가 변하는 팔다리 + 테두리 없음 + 뒤쪽 팔다리는 조금 어둡게
-    const jersey = kit.jersey, ink = kit.ink;
+    const jersey = kitColors(it, opts.kits).shirt, ink = kit.ink;
     const SKC = "#eab18c";
     const lower = css(kit.pants != null ? kit.pants : kit.shorts);
     const socks = css(kit.pants != null ? kit.pants : kit.socks), boots = "#1b1b1b";
@@ -1087,8 +1320,8 @@
 
   // 팔레트 아이콘 (비스듬히 앞에서 본 모습, 칸에 맞춤)
   const figIconCache = new Map();
-  function figureIcon(kind, id, size = 112, rot = 0.55) {
-    const key = kind + id + size + "|" + rot;
+  function figureIcon(kind, id, size = 112, rot = 0.55, kits) {
+    const key = kind + id + size + "|" + rot + "|" + JSON.stringify((kits && kits[kind]) || "");
     if (figIconCache.has(key)) return figIconCache.get(key);
     const it = { kind, pose: id, x: 0, z: 0, rot, label: kind === "gk" ? "1" : "7" };
     const rig = poseRig(makeRig(), it);
@@ -1100,7 +1333,7 @@
     const span = Math.max(mxx - mnx, mxy - mny) * 1.25, cx = (mnx + mxx) / 2, cy = (mny + mxy) / 2;
     const proj = (v) => { const [x, y] = raw(v); return [((x - cx) / span + 0.5) * size, ((y - cy) / span + 0.5) * size]; };
     const c = document.createElement("canvas"); c.width = c.height = size;
-    drawFigure(c.getContext("2d"), cam, proj, it, rig);
+    drawFigure(c.getContext("2d"), cam, proj, it, rig, { kits });
     const url = c.toDataURL("image/png");
     figIconCache.set(key, url);
     return url;
@@ -1392,7 +1625,7 @@
       all.forEach((f) => { f.d = dz(f); });
       all.sort((a, b) => ((a.it.layer || 0) - (b.it.layer || 0)) || (a.d - b.d)).forEach((f) => {
         const picked = sel && sel.t === "item" && sel.it === f.it;
-        if (f.rig) return drawFigure(g, o.cam, proj, f.it, f.rig, { scale: o.figScale, selected: picked });
+        if (f.rig) return drawFigure(g, o.cam, proj, f.it, f.rig, { scale: o.figScale, selected: picked, kits: s.kits });
         const sp = thingSprite(f.it, o.cam, o.w, o.h);
         if (!sp) return;
         g.save();
@@ -1683,6 +1916,15 @@
   }
 
   /* ---------- 상태 ---------- */
+  // 팀 색: { gk: { shirt: "#rrggbb", … }, … } 중 올바른 색만 남김
+  function cleanKits(k) {
+    const o = {};
+    if (k && typeof k === "object") Object.keys(KIT_DEFAULT).forEach((t) => {
+      if (!k[t]) return;
+      Object.keys(KIT_PARTS).forEach((p) => { if (isHex(k[t][p])) (o[t] = o[t] || {})[p] = k[t][p]; });
+    });
+    return o;
+  }
   function normalize(s) {
     s = s || {};
     const items = [], marks = Array.isArray(s.marks) ? s.marks.map((m) => ({ ...m })) : [];
@@ -1699,6 +1941,7 @@
       marks,
       zones: Array.isArray(s.zones) ? s.zones.map((z) => z.a ? { ...z, a: z.a.slice(), b: z.b.slice() }
         : { shape: "rect", a: z.pts[0].slice(), b: z.pts[2].slice(), color: z.color, hatch: z.style !== "fill", fill: z.style === "fill" }) : [],
+      kits: cleanKits(s.kits),
     };
   }
 
@@ -1763,6 +2006,9 @@
     let W = 1, H = 1;
     let nextNum = 1;
     let down = null, draft = null;
+    let kitOpen = null;       // 선수 색 고르기가 열린 선수 (pid)
+    let kitScope = "one";     // 색 바꾸기 범위: one 이 선수만 · team 팀 전체
+    let rec = null;           // 영상 저장 중 { g, mr, done }
 
     /* ----- 기록 ----- */
     const snap = () => JSON.stringify(state);
@@ -1816,10 +2062,52 @@
       // 페이지가 숨겨졌다 보이거나 창 크기가 바뀌면 다시 맞춤
       if (stage.clientWidth && (stage.clientWidth !== W || stage.clientHeight !== H)) resize();
       if (W < 2) return;
+      GK3D.load(); // 패드가 처음 보일 때 3D 선수 불러오기
       if (playing) stepPlayback();
+      if (rec) needs = overNeeds = true; // 녹화 중엔 매 프레임 그려야 영상에 담김
       if (needs) { renderer.render(world.scene, camera); needs = false; }
       if (overNeeds) { drawOver(); overNeeds = false; }
+      if (rec) compose(rec.g);
     })();
+
+    /* ----- 저장: 3D 화면 + 2D 레이어를 한 장으로 합침 ----- */
+    const outSize = () => { const k = Math.min(window.devicePixelRatio || 1, 2); return [Math.round(W * k / 2) * 2, Math.round(H * k / 2) * 2]; };
+    function compose(g) {
+      const { width: w, height: h } = g.canvas;
+      g.drawImage(canvas, 0, 0, w, h);
+      g.drawImage(over, 0, 0, w, h);
+    }
+    function snapshot() {
+      const [w, h] = outSize();
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      const s0 = sel; sel = null; // 선택 표시는 빼고
+      renderer.render(world.scene, camera); drawOver();
+      compose(c.getContext("2d"));
+      sel = s0; dirty();
+      return new Promise((res) => c.toBlob(res, "image/png"));
+    }
+    const recType = () => window.MediaRecorder && ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"].find((t) => MediaRecorder.isTypeSupported(t));
+    // 처음부터 재생하면서 녹화 → 끝나면 영상 파일(Blob)
+    function record() {
+      const type = recType();
+      if (!type || rec) return null;
+      if (playing) stop();
+      const [w, h] = outSize();
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      const g = c.getContext("2d");
+      const s0 = sel; sel = null; dirty();
+      renderer.render(world.scene, camera); drawOver(); compose(g);
+      if (!play()) { sel = s0; dirty(); return false; }
+      const mr = new MediaRecorder(c.captureStream(30), { mimeType: type, videoBitsPerSecond: 8e6 });
+      const parts = [];
+      mr.ondataavailable = (e) => { if (e.data.size) parts.push(e.data); };
+      rec = { g, mr };
+      mr.start();
+      return new Promise((res) => {
+        mr.onstop = () => res(new Blob(parts, { type: type.split(";")[0] }));
+        rec.done = () => { rec = null; sel = null; setTimeout(() => mr.state !== "inactive" && mr.stop(), 300); };
+      });
+    }
 
     /* ----- 좌표 ----- */
     const ray = new T.Raycaster(), ndc = new T.Vector2(), ground = new T.Plane(UP, 0);
@@ -2116,7 +2404,7 @@
         const it = sel.it, person = isPerson(it.kind);
         html += `<span class="ftb-name">${KIND_NAME[it.kind]}${it.step ? ` · 순서 ${it.step}` : ""}</span>`;
         if (canRotate(it.kind)) html += B("rotL", "⟲", "왼쪽으로 돌리기") + B("rotR", "⟳", "오른쪽으로 돌리기");
-        if (person) html += B("mirror", "⇋", "좌우 반전");
+        if (person) html += B("mirror", "⇋", "좌우 반전") + B("kit", "색", "유니폼 색 바꾸기 (상의 · 반바지 · 양말)", `class="${kitOpen === (it.pid || it.id) ? "on" : ""}"`);
         html += B("front", "⤒ 앞으로", "겹칠 때 맨 앞으로") + B("back", "⤓ 뒤로", "겹칠 때 맨 뒤로");
         if (canSequence(it.kind)) html += B("copy", "＋ 다음 위치", "같은 선수를 복사해서 다음 순서로 (애니메이션)");
         if (person || it.kind === "ball") html += B("op", "◐", "투명도 바꾸기");
@@ -2145,6 +2433,18 @@
         html += ZONE_COLORS.map((c) => `<button type="button" class="sw ${z.color === c ? "on" : ""}" data-a="zoneColor" data-v="${c}" style="--c:${c}"></button>`).join("");
       }
       html += B("dup", "⧉ 복사", "똑같이 하나 더 만들기 (⌘D)") + B("del", "🗑", "삭제", 'class="danger"');
+      if (sel.t === "item" && isPerson(sel.it.kind) && kitOpen === (sel.it.pid || sel.it.id)) {
+        const it = sel.it, cur = kitColors(it, state.kits);
+        html += `<span class="ftb-br"></span>`
+          + B("kscope", "이 선수만", "이 선수만 바꾸기", `data-v="one" class="tg ${kitScope === "one" ? "on" : ""}"`)
+          + B("kscope", `${KIND_NAME[it.kind]} 전체`, "같은 팀 선수 모두 바꾸기", `data-v="team" class="tg ${kitScope === "team" ? "on" : ""}"`)
+          + (kitScope === "one" && it.kit ? B("pkitReset", "팀 색으로", "이 선수를 팀 유니폼 색으로 되돌리기") : "");
+        Object.entries(KIT_PARTS).forEach(([p, n]) => {
+          html += `<span class="ftb-br"></span><span class="ftb-name ftb-part">${n}</span>`
+            + KIT_SWATCHES.map((c) => `<button type="button" class="sw ${cur[p] === c ? "on" : ""}" data-a="kc" data-p="${p}" data-v="${c}" style="--c:${c}" title="${n} 색"></button>`).join("")
+            + `<label class="pk-pick" title="직접 고르기"><input type="color" data-p="${p}" value="${cur[p]}" aria-label="${n} 색 직접 고르기" /></label>`;
+        });
+      }
       ftb.innerHTML = html;
       ftb.hidden = false;
       placeToolbar();
@@ -2165,6 +2465,11 @@
       ftb.style.left = x + "px"; ftb.style.top = y + "px";
     }
     ftb.addEventListener("pointerdown", (e) => e.stopPropagation());
+    ftb.addEventListener("change", (e) => {
+      const i = e.target.closest("input[type=color][data-p]");
+      if (!i || !sel || sel.t !== "item") return;
+      pushUndo(); setKit(sel.it, i.dataset.p, i.value);
+    });
     ftb.addEventListener("click", (e) => {
       const b = e.target.closest("[data-a]"); if (!b || !sel) return;
       const a = b.dataset.a, v = b.dataset.v;
@@ -2176,6 +2481,14 @@
         const it = sel.it;
         if (a === "rotL" || a === "rotR") update(it, { rot: r2((it.rot || 0) + (a === "rotL" ? -1 : 1) * Math.PI / 4) });
         else if (a === "mirror") update(it, { mirror: !it.mirror });
+        else if (a === "kit") { undoS.pop(); kitOpen = kitOpen === (it.pid || it.id) ? null : it.pid || it.id; renderToolbar(); }
+        else if (a === "kscope") { undoS.pop(); kitScope = v; renderToolbar(); }
+        else if (a === "kc") setKit(it, b.dataset.p, v);
+        else if (a === "pkitReset") {
+          const g = it.pid || it.id;
+          state.items.filter((x) => (x.pid || x.id) === g).forEach((x) => { delete x.kit; });
+          overNeeds = true; renderToolbar();
+        }
         else if (a === "front" || a === "back") {
           const ls = state.items.map((x) => x.layer || 0);
           it.layer = a === "front" ? Math.max(...ls) + 1 : Math.min(...ls) - 1;
@@ -2230,7 +2543,7 @@
       let body = "";
       if (POSE_LIST[tab]) {
         const FRONT_ICON = new Set(["catch_mid", "catch_knee"]); // 정수리가 보이는 정면 모습으로 보여줌
-        body = POSE_LIST[tab].map((id) => `<button type="button" class="pi" data-pose="${id}" title="${POSES[id].n}"><img src="${figureIcon(tab, id, 112, FRONT_ICON.has(id) ? -0.28 : 0.55)}" alt="" width="56" height="56" /><span>${POSES[id].n}</span></button>`).join("");
+        body = POSE_LIST[tab].map((id) => `<button type="button" class="pi" data-pose="${id}" title="${POSES[id].n}"><img src="${figureIcon(tab, id, 112, FRONT_ICON.has(id) ? -0.28 : 0.55, state.kits)}" alt="" width="56" height="56" /><span>${POSES[id].n}</span></button>`).join("");
       } else if (tab === "gear") {
         body = GEAR.map((k) => `<button type="button" class="pi" data-gear="${k}" title="${KIND_NAME[k]}"><img src="${equipIcon(k)}" alt="" width="56" height="56" /><span>${KIND_NAME[k]}</span></button>`).join("");
       } else if (tab === "line") {
@@ -2266,6 +2579,22 @@
       palette.querySelectorAll("[data-line]").forEach((b) => b.classList.toggle("on", mode === "line" && lineType === b.dataset.line));
       palette.querySelectorAll("[data-pick]").forEach((b) => b.classList.toggle("on", mode === "select"));
       palette.querySelectorAll("[data-drawmode]").forEach((b) => b.classList.toggle("on", mode === b.dataset.drawmode));
+    }
+    // 유니폼 색: 이 선수만(같은 선수 순서 복사본 포함) 또는 팀 전체
+    function setKit(it, part, c) {
+      if (!isHex(c) || !KIT_PARTS[part]) return;
+      c = c.toLowerCase();
+      if (kitScope === "team") {
+        state.kits = state.kits || {};
+        state.kits[it.kind] = { ...(state.kits[it.kind] || {}), [part]: c };
+        // 팀 색을 고르면 그 팀 선수들의 같은 부위 개별 색은 지움 (팀 색이 보이게)
+        state.items.forEach((x) => { if (x.kind === it.kind && x.kit) { delete x.kit[part]; if (!Object.keys(x.kit).length) delete x.kit; } });
+        renderPalette();
+      } else {
+        const g = it.pid || it.id;
+        state.items.filter((x) => (x.pid || x.id) === g).forEach((x) => { x.kit = { ...(x.kit || {}), [part]: c }; });
+      }
+      overNeeds = true; renderToolbar();
     }
     palette && palette.addEventListener("click", (e) => {
       if (playing) return;
@@ -2343,7 +2672,9 @@
         const x = k0.x + (k1.x - k0.x) * m, z = k0.z + (k1.z - k0.z) * m, rot = lerpAngle(k0.rot || 0, k1.rot || 0, m);
         if (fig) {
           Object.assign(fig.it, { x, z, rot });
-          poseRig(fig.rig, fig.it, lerpParams(poseParams(k0.pose, k0.mirror), poseParams(k1.pose, k1.mirror), ease(Math.min(1, Math.max(0, (f - 0.3) / 0.7)))));
+          const pt = ease(Math.min(1, Math.max(0, (f - 0.3) / 0.7)));
+          fig.it._blend = [k0.pose, k0.mirror, k1.pose, k1.mirror, pt]; // 3D 선수: 두 자세 사이
+          poseRig(fig.rig, fig.it, lerpParams(poseParams(k0.pose, k0.mirror), poseParams(k1.pose, k1.mirror), pt));
           return;
         }
         void tgt;
@@ -2360,11 +2691,13 @@
       playing = null;
       world.itemsG.children.forEach((o) => { o.visible = true; });
       setMode(mode); dirty();
+      if (rec && rec.done) rec.done();
       onPlayChange && onPlayChange(false);
     }
 
     renderPalette();
     setMode("select");
+    GK3D.ready.then((ok) => { if (ok) { renderPalette(); dirty(); } });
 
     const load = (s) => {
       stop();
@@ -2379,6 +2712,9 @@
     return {
       get state() { return state; },
       get isPlaying() { return !!playing; },
+      get isRecording() { return !!rec; },
+      canRecord: () => !!recType(),
+      snapshot, record,
       get canUndo() { return undoS.length > 0; },
       get canRedo() { return redoS.length > 0; },
       setAngle(a) {
@@ -2401,5 +2737,7 @@
     };
   }
 
-  window.Tactics3D = { ready: Promise.resolve(), createPad, boardImage, figureIcon, ANGLES, TURFS, POSES, EQUIP, POSE_ART, normalize };
+  // 3D 선수를 불러오면 썸네일 · 아이콘을 새로 그림
+  GK3D.ready.then((ok) => { if (ok) { imgCache.clear(); figIconCache.clear(); } });
+  window.Tactics3D = { ready: GK3D.ready, createPad, boardImage, figureIcon, ANGLES, TURFS, POSES, EQUIP, POSE_ART, normalize };
 })();
