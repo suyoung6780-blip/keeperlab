@@ -761,7 +761,7 @@
       sprites.set(key, sp);
       return sp;
     }
-    return { load, ready, sprite, SPAN, get ok() { return state === "ready"; } };
+    return { load, ready, sprite, SPAN, get ok() { return state === "ready"; }, get waiting() { return state === "idle" || state === "loading"; } };
   })();
 
   function shade(hexStr, k) {
@@ -837,6 +837,8 @@
       g.restore();
       return;
     }
+    // 3D 캐릭터를 아직 불러오는 중이면 옛 2D 선수를 잠깐 보여 주지 않음 (다 불러오면 바로 그림)
+    if (GK3D.waiting) { g.restore(); return; }
 
     // 그림자
     g.fillStyle = "rgba(0,0,0,.28)";
